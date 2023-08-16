@@ -13,8 +13,8 @@ from progress_bar import progress_bar
 
 # Paths
 csv_file_path = "C:/Users/jarre/ownCloud/CV-eDNA/invertmatch.csv"
-source_image_dir = "C:/Users/jarre/ownCloud/CV-eDNA/AllPhotosJPG"
-target_base_dir = "C:/Users/jarre/ownCloud/CV-eDNA/splits/LKTL_indiscriminate"
+source_image_dir = "/mnt/ssd-cluster/jarrett/CV-eDNA/AllPhotosJPG"
+target_base_dir = "/mnt/ssd-cluster/jarrett/CV-eDNA/splits/LKTL_indiscriminate"
 
 # Read the CSV file using pandas
 data = pd.read_csv(csv_file_path)
