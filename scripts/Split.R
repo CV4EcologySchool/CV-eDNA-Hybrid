@@ -31,7 +31,11 @@ num_test <- num_samples - num_train - num_validation
 shuffled_indices <- sample(num_samples)
 
 # Assigning splits
-invertmatch$Split = NA
-invertmatch$Split[shuffled_indices[1:num_train]] = "Train"
-invertmatch$Split[shuffled_indices[(num_train + 1):(num_train + num_validation)]] = 'Validation'
-invertmatch$Split[shuffled_indices[(num_train + num_validation + 1):num_samples]] = "Test"
+train_data = invertmatch[shuffled_indices[1:num_train],]
+validation_data = invertmatch[shuffled_indices[(num_train + 1):(num_train + num_validation)],]
+test_data = invertmatch[shuffled_indices[(num_train + num_validation + 1):num_samples],]
+
+write.csv(train_data, "train.csv")
+write.csv(validation_data, "valid.csv")
+write.csv(test_data, "test.csv")
+
