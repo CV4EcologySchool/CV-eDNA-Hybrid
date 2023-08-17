@@ -1,3 +1,5 @@
+#Matching invertmatch Labels with photo file names
+
 filesdf = paste(invertmatch$Label,invertmatch$ROI,"jpg", sep = ".")
 filesdftif = paste(invertmatch$Label, "tif", invertmatch$ROI, "jpg", sep = ".")
 filesdftif01 = paste0(substr(filesdftif, 1, 20), substr(filesdftif, 24, str_length(filesdftif)))

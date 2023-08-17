@@ -1,7 +1,6 @@
-
-
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+# Fills hierarchy for given single-level labels
 longhier = function(zeroclass, hierarchy){
   simpzero = hierarchy[,c('Species',
                           'Genus',
@@ -20,9 +19,12 @@ longhier = function(zeroclass, hierarchy){
   return(predont)
 }
 
+# Fix Amblypigi
 invertmatch$AllTaxa[which(invertmatch$AllTaxa == "indet.")] = "Amblypigi"
+# Create longlabels df
 longlabels = longhier(invertmatch$AllTaxa, hierarchy)
 
+# Determine which taxa are >100 obs
 alltable = table(invertmatch$AllTaxa)
 allname = names(which(alltable <= 99))
 
@@ -30,6 +32,7 @@ AllTaxa = invertmatch$AllTaxa
 KeepTaxa = AllTaxa[AllTaxa %!in% allname]
 KeepTaxa = as.factor(KeepTaxa)
 
+# Get the taxonomic level a given label is known at (i.e. which level is in KeepTaxa)
 getknown = function(simpzero, testlab){
   simpzero$known = NA
   for(i in 1:nrow(simpzero)){
@@ -38,13 +41,16 @@ getknown = function(simpzero, testlab){
   return(simpzero)
 }
 
+# Add known column to longlabels
 longlabels = getknown(longlabels, KeepTaxa)
 
+# Create LKTL labels for all specimens
 LKTL = c()
 for(i in 1:nrow(longlabels)){
   LKTL[i] = longlabels[i,longlabels$known[i]]
 }
 
+#Visualize LKTL labels
 LKTL_Table = as.data.frame(table(LKTL))
 LKTL_Table = LKTL_Table[order(LKTL_Table$Freq, decreasing = TRUE), ]
 
@@ -53,6 +59,8 @@ barplot(LKTL_Table$Freq, names.arg = LKTL_Table$LKTL,
         xlab = "Categories", ylab = "Abundance",
         col = "blue")
 
+
+#Create long LKTL labels 
 LKTL_Longdf = longhier(LKTL, hierarchy)
 
 LKTL_Long = apply(LKTL_Longdf[, 1:6], 1, function(row) {

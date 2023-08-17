@@ -5,6 +5,7 @@ setwd("C:/Users/jarre/ownCloud/CV-eDNA")
 
 invert = read.csv("TaxMorColWea4.1.csv")
 invertmatch = read.csv("invertmatch.csv")
+edna = read.csv("eDNARaw.csv")
 
 test = gsub('_', '', invert$Event)
 test = gsub('\\.', '', test)
