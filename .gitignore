@@ -1,4 +1,6 @@
 datasets
+model_states
+local
 
 __pycache__
 *.pyc
