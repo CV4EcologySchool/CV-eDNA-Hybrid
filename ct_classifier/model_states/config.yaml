@@ -1,0 +1,15 @@
+annotate_root: splits/LKTL-40130
+batch_size: 128
+class_labels: LKTL_Long
+data_root: /mnt/ssd-cluster/jarrett/CV-eDNA
+device: cuda
+file_name: Label
+image_size:
+- 224
+- 224
+learning_rate: 0.001
+num_classes: 38
+num_epochs: 200
+num_workers: 4
+seed: 32678456782
+weight_decay: 0.001
