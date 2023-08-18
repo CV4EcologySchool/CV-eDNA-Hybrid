@@ -8,8 +8,11 @@ device: cuda
 num_workers: 4
 
 # dataset parameters
-data_root: datasets/CaltechCT
-num_classes: 16
+data_root: /mnt/ssd-cluster/jarrett/CV-eDNA
+annotate_root: splits/LKTL-40130
+class_labels: LKTL_Long
+file_name: Label
+num_classes: 38
 
 # training hyperparameters
 image_size: [224, 224]
