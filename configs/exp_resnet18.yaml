@@ -11,6 +11,7 @@ num_workers: 4
 data_root: /mnt/ssd-cluster/jarrett/CV-eDNA
 annotate_root: splits/LKTL-40130
 class_labels: LKTL_Long
+short_labels: LKTL
 file_name: Label
 num_classes: 38
 
