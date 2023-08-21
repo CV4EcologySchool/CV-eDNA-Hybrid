@@ -54,6 +54,8 @@ labelIndex = encoder.transform(Y)
 short_labels = cfg['short_labels']
 short_Y = meta[short_labels]
 short_Y = short_Y.unique()
+
+Y_ordered = sorted(Y)
 short_Y_ordered = [0] * len(short_Y)
 
 for i in labelIndex:
@@ -109,20 +111,27 @@ def evaluate(cfg, dataLoader, model):
     
     return all_true, all_preds, all_probs
     
-all_true, all_preds, all_probs = evaluate(cfg, dl_test, model)
+all_true, all_preds, all_probs = evaluate(cfg, dl_test, model[0])
 
 report = classification_report(all_true, 
                                all_preds, 
                                target_names=short_Y_ordered,
-                               output_dict=False)
+                               output_dict=True)
+
+report_path = os.path.join(
+    data_root,
+    'eval',
+    'metrics/eval.yaml')
+with open(report_path, 'w') as file:
+    yaml.dump(report, file)
+
 
 conf_matrix = confusion_matrix(all_true, all_preds)
 
-unique_labels = short_Y_ordered
 conf_data = []
 for i, row in enumerate(conf_matrix):
     for j, count in enumerate(row):
-        conf_data.append([unique_labels[i], unique_labels[j], count])
+        conf_data.append([Y_ordered[i], Y_ordered[j], count])
 
 conf_df = pd.DataFrame(conf_data, columns=['Reference', 'Prediction', 'Count'])
 
@@ -130,6 +139,8 @@ conf_df = pd.DataFrame(conf_data, columns=['Reference', 'Prediction', 'Count'])
 conf_df['prop'] = conf_df['Count'] / conf_df.groupby('Reference')['Count'].transform('sum')
 
 conf_table = conf_df.pivot_table(index='Reference', columns='Prediction', values='prop', fill_value=0)
+
+
 
 plt.figure(figsize=(16, 12))
 sns.set(font_scale=1)
@@ -153,10 +164,15 @@ ax.annotate("Predicted", xy=(0.5, -0.2), xytext=(0.5, -0.5), ha='center', va='ce
 # Customize the appearance directly on the Axes object
 ax.set_xticklabels(short_Y_ordered, rotation=45, ha='right')
 
-# Show the plot
-plt.show()
+# Save the plot
+conf_path = os.path.join(
+    data_root,
+    'eval',
+    'plots/conf.png')
 
+plt.savefig(conf_path)
 
+print("Done")
 
 
 
