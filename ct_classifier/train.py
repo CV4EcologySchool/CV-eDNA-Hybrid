@@ -30,14 +30,21 @@ def create_dataloader(cfg, split='train'):
     '''
     dataset_instance = CTDataset(cfg, split)        # create an object instance of our CTDataset class
 
-    dataLoader = DataLoader(
-            dataset=dataset_instance,
-            batch_size=cfg['batch_size'],
-            shuffle=True,
-            num_workers=cfg['num_workers']
-        )
+    if split == 'train':
+        dataLoader = DataLoader(
+                dataset=dataset_instance,
+                batch_size=cfg['batch_size'],
+                shuffle=True,
+                num_workers=cfg['num_workers']
+            )
+    else:
+        dataLoader = DataLoader(
+                dataset=dataset_instance,
+                batch_size=cfg['batch_size'],
+                shuffle=False,
+                num_workers=cfg['num_workers']
+            )
     return dataLoader
-
 
 
 def load_model(cfg):

@@ -18,7 +18,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import seaborn as sns
 from train import create_dataloader, load_model       # NOTE: since we're using these functions across files, it could make sense to put them in e.g. a "util.py" script.
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import classification_report, roc_curve, precision_recall_curve, auc, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix
 
 
 def predict(cfg, dataLoader, model):
@@ -215,6 +215,7 @@ def main():
         data_root,
         'eval',
         'metrics/eval.yaml')
+    
     with open(report_path, 'w') as file:
         yaml.dump(report, file)
     
