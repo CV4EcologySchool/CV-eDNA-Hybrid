@@ -7,6 +7,7 @@ Created on Mon Aug 21 15:56:20 2023
 import os
 import yaml
 import argparse
+import shutil
 import torch
 import torch.nn as nn
 import numpy as np
@@ -73,7 +74,7 @@ conf_tab.index = short_Y_ordered
 
 threshold = 0.1
 
-result_dict = {}
+vis_dict = {}
 
 # Iterate through each row
 for row_label, row in conf_tab.iterrows():
@@ -82,15 +83,15 @@ for row_label, row in conf_tab.iterrows():
     values_above_threshold = row[row > threshold].tolist()
     
     # Add entries to the result_dict
-    result_dict[row_label] = [cols_above_threshold, values_above_threshold]
+    vis_dict[row_label] = [cols_above_threshold, values_above_threshold]
 
-report_path = os.path.join(
+vis_path = os.path.join(
     data_root,
     'eval',
-    'metrics/eval.yaml')
+    'vis/vis.yaml')
 
-with open(report_path, 'w') as file:
-    yaml.dump(report, file)
+with open(vis_path, 'w') as file:
+    yaml.dump(vis_dict, file)
 
 
 val_labs = meta[short_labels]
@@ -102,9 +103,28 @@ for i in labelIndex:
 
 pred_labs = np.array(pred_labs)
 
-for g_true in result_dict:
-    for pred in result_dict[g_true][0]:
+file_names = cfg['file_name']
+for g_true in vis_dict:
+    for pred in vis_dict[g_true][0]:
         idx = np.where((val_labs == g_true) & (pred_labs == pred))[0]
+        idx = np.random.choice(idx, size=min(len(idx), 5), replace=False)
+        files = meta[file_names][idx]
+        # Create the target directory if it doesn't exist
+        target_dir = os.path.join(data_root, 'eval/vis', g_true)
+        
+        if not os.path.exists(target_dir):
+            os.mkdir(target_dir)
+        
+        target_dir = os.path.join(target_dir, pred)
+        if not os.path.exists(target_dir):
+            os.mkdir(target_dir)
+        
+        for file in files:
+            source_file_path = os.path.join(data_root, 'AllPhotosJPG', file)
+            target_file_path = os.path.join(target_dir, file)
+            shutil.copy(source_file_path, target_file_path)
+
+        
 
 
 
