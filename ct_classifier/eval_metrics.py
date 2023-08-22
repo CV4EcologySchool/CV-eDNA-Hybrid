@@ -78,7 +78,7 @@ def conf_table(conf_matrix, Y, prop = True):
 
     Parameters:
     - conf_matrix (Array): The standard confusion matrix output from sklearn
-    - Y (Array): The unique labels of the classifier (i.e. the classes of the output layer). Will be used as conf_table labels
+    - Y (list): The unique labels of the classifier (i.e. the classes of the output layer). Will be used as conf_table labels
     - prop (bool): Should the conf table use proportions (i.e. Recall) or total values?
 
     Returns:
@@ -109,7 +109,7 @@ def conf_table(conf_matrix, Y, prop = True):
     return conf_table
 
 
-def save_conf(cfg, table, Y):
+def save_conf(cfg, table, Y, report):
     """
     Plots a confusion matrix
 
@@ -117,12 +117,16 @@ def save_conf(cfg, table, Y):
     - cfg (dict): The config yaml for your experiment
     - table (DataFrame): The conf_table
     - Y (list): The class labels to be plotted on the conf_tab
+    - report (dict): From sklearn.metrics.classification_report
 
     Returns:
     Saves plot to directory
     """
     
     data_root = cfg['data_root']
+    
+    accuracy = round(report["accuracy"], 3)
+    F1_score = round(report["macro avg"]["f1-score"], 3)
     
     custom_gradient = ["#201547", "#00BCE1"]
     n_bins = 100  # Number of bins for the gradient
@@ -135,6 +139,7 @@ def save_conf(cfg, table, Y):
     
     ax = sns.heatmap(table, cmap=custom_cmap, cbar_kws={'label': 'Proportion'})
     
+    ax.set_title(f"Accuracy = {accuracy} ; F1 Score = {F1_score}", fontsize=24)
     # Customize the axis labels and ticks
     ax.set_xlabel("Predicted", fontsize=20)
     ax.set_ylabel("Actual", fontsize=20)
@@ -158,6 +163,71 @@ def save_conf(cfg, table, Y):
         'plots/conf.png')
     
     plt.savefig(conf_path)
+
+
+def save_conf_html(cfg, table, Y, report):
+    """
+    Plots a confusion matrix
+
+    Parameters:
+    - cfg (dict): The config yaml for your experiment
+    - table (DataFrame): The tablele
+    - Y (list): The class labels to be plotted on the table
+    - report (dict): From sklearn.metrics.classification_report
+
+    Returns:
+    Saves plot to directory
+    """
+    
+    
+    accuracy = round(report["accuracy"], 3)
+    F1_score = round(report["macro avg"]["f1-score"], 3)
+    
+    # Create a custom gradient using Plotly colorscale
+    custom_gradient = [[0, "#201547"], [1, "#00BCE1"]]
+    n_bins = 100
+    custom_colorscale = custom_gradient * n_bins
+    
+    # Create heatmap using Plotly
+    heatmap = go.Figure(
+        go.Heatmap(
+            z=table.values,
+            x=table.columns,
+            y=table.index,
+            colorscale=custom_colorscale,
+            text=table.values,
+            hoverinfo="text",
+        )
+    )
+    
+    heatmap.update_layout(
+        title=f"Accuracy = {accuracy} ; F1 Score = {F1_score}",
+        title_font_size=24,
+        xaxis_title="Predicted",
+        yaxis_title="Actual",
+        xaxis_tickangle=-45,
+        xaxis_tickvals=np.arange(len(Y)),
+        xaxis_ticktext=Y,
+        yaxis_tickvals=np.arange(len(Y)),
+        yaxis_ticktext=Y,
+        annotations=[
+            dict(
+                text="Predicted",
+                x=0.5,
+                y=-0.15,  # Adjusted y value
+                xref="paper",
+                yref="paper",
+                xanchor="center",
+                yanchor="auto",  # Changed to 'auto'
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=2,
+            )
+        ],
+    )
+
+    heatmap.write_html("../plots/heatmap_interactive_scratch.html")
 
 
 def main():
@@ -222,7 +292,9 @@ def main():
     
     conf_tab = conf_table(conf_matrix, Y_ordered)
     
-    save_conf(cfg, conf_tab, short_Y_ordered)
+    save_conf(cfg, conf_tab, short_Y_ordered, report)
+    
+    save_conf_html(cfg, conf_tab, short_Y_ordered, report)
 
     # That's all, folks!
         
