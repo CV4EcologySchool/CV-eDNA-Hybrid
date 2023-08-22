@@ -78,7 +78,7 @@ def conf_table(conf_matrix, Y, prop = True):
 
     Parameters:
     - conf_matrix (Array): The standard confusion matrix output from sklearn
-    - Y (Array): The unique labels of the classifier. Will be used as conf_table labels
+    - Y (Array): The unique labels of the classifier (i.e. the classes of the output layer). Will be used as conf_table labels
     - prop (bool): Should the conf table use proportions (i.e. Recall) or total values?
 
     Returns:
@@ -114,7 +114,7 @@ def save_conf(cfg, table, Y):
     Plots a confusion matrix
 
     Parameters:
-    - cfg (dict): The config yaml
+    - cfg (dict): The config yaml for your experiment
     - table (DataFrame): The conf_table
     - Y (list): The class labels to be plotted on the conf_tab
 
@@ -215,7 +215,6 @@ def main():
         data_root,
         'eval',
         'metrics/eval.yaml')
-    
     with open(report_path, 'w') as file:
         yaml.dump(report, file)
     
