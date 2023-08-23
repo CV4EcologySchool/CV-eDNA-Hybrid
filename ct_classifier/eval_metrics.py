@@ -128,7 +128,8 @@ def save_conf(cfg, table, Y, report, level = "species"):
     data_root = cfg['data_root']
     
     accuracy = round(report["accuracy"], 3)
-    F1_score = round(report["macro avg"]["f1-score"], 3)
+    recall = round(report["macro avg"]["recall"], 3)
+    n = len(Y)
     
     custom_gradient = ["#201547", "#00BCE1"]
     n_bins = 100  # Number of bins for the gradient
@@ -141,7 +142,7 @@ def save_conf(cfg, table, Y, report, level = "species"):
     
     ax = sns.heatmap(table, cmap=custom_cmap, cbar_kws={'label': 'Proportion'})
     
-    ax.set_title(f"Level = {level} ; Accuracy = {accuracy} ; F1 Score = {F1_score}", fontsize=24)
+    ax.set_title(f"Level = {level} ; Accuracy = {accuracy} ; Recall = {recall}; n = {n}", fontsize=24)
     # Customize the axis labels and ticks
     ax.set_xlabel("Predicted", fontsize=20)
     ax.set_ylabel("Actual", fontsize=20)
@@ -162,7 +163,7 @@ def save_conf(cfg, table, Y, report, level = "species"):
     conf_path = os.path.join(
         data_root,
         'eval',
-        f'plots/conf{level}.png')
+        f'plots/conf_{n}_{level}.png')
     
     plt.savefig(conf_path)
 
