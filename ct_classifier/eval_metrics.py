@@ -7,6 +7,7 @@ Created on Fri Aug 18 10:37:09 2023
 
 import os
 import yaml
+import copy
 import argparse
 import torch
 import torch.nn as nn
@@ -110,7 +111,7 @@ def conf_table(conf_matrix, Y, prop = True):
     return conf_table
 
 
-def save_conf(cfg, table, Y, report):
+def save_conf(cfg, table, Y, report, level = "species"):
     """
     Plots a confusion matrix
 
@@ -140,7 +141,7 @@ def save_conf(cfg, table, Y, report):
     
     ax = sns.heatmap(table, cmap=custom_cmap, cbar_kws={'label': 'Proportion'})
     
-    ax.set_title(f"Accuracy = {accuracy} ; F1 Score = {F1_score}", fontsize=24)
+    ax.set_title(f"Level = {level} ; Accuracy = {accuracy} ; F1 Score = {F1_score}", fontsize=24)
     # Customize the axis labels and ticks
     ax.set_xlabel("Predicted", fontsize=20)
     ax.set_ylabel("Actual", fontsize=20)
@@ -161,7 +162,7 @@ def save_conf(cfg, table, Y, report):
     conf_path = os.path.join(
         data_root,
         'eval',
-        'plots/conf.png')
+        f'plots/conf{level}.png')
     
     plt.savefig(conf_path)
 
@@ -277,10 +278,58 @@ def main():
     
     all_true, all_preds, all_probs = predict(cfg, dl_test, model[0])
     
-    report = classification_report(all_true, 
-                                   all_preds, 
-                                   target_names=short_Y_ordered,
-                                   output_dict=True)
+    
+    hierarchy_long = {"Phylum": Y_ordered.copy(),
+                      "Class": Y_ordered.copy(),
+                      "Order": Y_ordered.copy(),
+                      "Family": Y_ordered.copy(),
+                      "Genus": Y_ordered.copy(),
+                      "Species": Y_ordered.copy()}
+    
+    i = 1
+    for level in hierarchy_long:
+        for j in range(len(hierarchy_long[level])):
+            input_string = hierarchy_long[level][j]
+            parts = input_string.split("_")
+            hierarchy_long[level][j] = "_".join(parts[:i])
+        i += 1
+    
+    hierarchy_short = copy.deepcopy(hierarchy_long)
+    for level in hierarchy_short:
+        for j in range(len(hierarchy_short[level])):
+            input_string = hierarchy_short[level][j]
+            parts = input_string.split("_")
+            hierarchy_short[level][j] = parts[-1]
+    
+    
+    named_pred_long = {"Phylum": all_preds.copy(),
+                  "Class": all_preds.copy(),
+                  "Order": all_preds.copy(),
+                  "Family": all_preds.copy(),
+                  "Genus": all_preds.copy(),
+                  "Species": all_preds.copy()}
+    
+    named_pred_short = copy.deepcopy(named_pred_long)
+    named_true_long = copy.deepcopy(named_pred_long)
+    named_true_short = copy.deepcopy(named_pred_long)
+    
+    for level in hierarchy_long:
+        named_pred_long[level] = [hierarchy_long[level][index] for index in all_preds]
+        named_true_long[level] = [hierarchy_long[level][index] for index in all_true]
+        named_pred_short[level] = [hierarchy_short[level][index] for index in all_preds]
+        named_true_short[level] = [hierarchy_short[level][index] for index in all_true]
+    
+    report = {"Phylum": {},
+                  "Class": {},
+                  "Order": {},
+                  "Family": {},
+                  "Genus": {},
+                  "Species": {}}
+    
+    for level in report:
+        report[level] = classification_report(named_true_short[level],
+                              named_pred_short[level],
+                              output_dict=True)
 
     report_path = os.path.join(
         data_root,
@@ -289,17 +338,28 @@ def main():
     with open(report_path, 'w') as file:
         yaml.dump(report, file)
     
-    conf_matrix = confusion_matrix(all_true, all_preds)
+    conf_tab= {"Phylum": [],
+                  "Class": [],
+                  "Order": [],
+                  "Family": [],
+                  "Genus": [],
+                  "Species": []}
     
-    conf_tab = conf_table(conf_matrix, Y_ordered)
-    
-    save_conf(cfg, conf_tab, short_Y_ordered, report)
+    for level in conf_tab:
+        conf_matrix = confusion_matrix(named_true_long[level],
+                              named_pred_long[level])
+        long = pd.Series(hierarchy_long[level])
+        long = long.unique()
+        conf_tab[level] = conf_table(conf_matrix, long)
+        short = pd.Series(hierarchy_short[level])
+        short = short.unique()
+        save_conf(cfg, conf_tab[level], short, report[level], level)
     
     save_conf_html(cfg, conf_tab, short_Y_ordered, report)
 
     # That's all, folks!
         
-
+i = 1
 
 if __name__ == '__main__':
     # This block only gets executed if you call the "train.py" script directly
