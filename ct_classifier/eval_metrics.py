@@ -73,6 +73,48 @@ def predict(cfg, dataLoader, model):
     
     return all_true, all_preds, all_probs
     
+def hierarchy(Y_ordered):
+    hierarchy_long = {"Phylum": Y_ordered.copy(),
+                      "Class": Y_ordered.copy(),
+                      "Order": Y_ordered.copy(),
+                      "Family": Y_ordered.copy(),
+                      "Genus": Y_ordered.copy(),
+                      "Species": Y_ordered.copy()}
+    
+    i = 1
+    for level in hierarchy_long:
+        for j in range(len(hierarchy_long[level])):
+            input_string = hierarchy_long[level][j]
+            parts = input_string.split("_")
+            hierarchy_long[level][j] = "_".join(parts[:i])
+        i += 1
+    
+    hierarchy_short = copy.deepcopy(hierarchy_long)
+    for level in hierarchy_short:
+        for j in range(len(hierarchy_short[level])):
+            input_string = hierarchy_short[level][j]
+            parts = input_string.split("_")
+            hierarchy_short[level][j] = parts[-1]
+    
+    return hierarchy_long, hierarchy_short
+    
+def hierarchy_pred(y, hierarchy_long, hierarchy_short):
+   
+
+    named_long = {"Phylum": y.copy(),
+                  "Class": y.copy(),
+                  "Order": y.copy(),
+                  "Family": y.copy(),
+                  "Genus": y.copy(),
+                  "Species": y.copy()}
+    
+    named_short = copy.deepcopy(named_long)
+    
+    for level in hierarchy_long:
+        named_long[level] = [hierarchy_long[level][index] for index in y]
+        named_short[level] = [hierarchy_short[level][index] for index in y]
+    
+    return named_long, named_short
 
 def conf_table(conf_matrix, Y, prop = True):
     """
@@ -110,13 +152,11 @@ def conf_table(conf_matrix, Y, prop = True):
     
     return conf_table
 
-
-def save_conf(cfg, table, Y, report, level = "species"):
+def plt_conf(table, Y, report, level = "species"):
     """
     Plots a confusion matrix
 
     Parameters:
-    - cfg (dict): The config yaml for your experiment
     - table (DataFrame): The conf_table
     - Y (list): The class labels to be plotted on the conf_tab
     - report (dict): From sklearn.metrics.classification_report
@@ -124,9 +164,7 @@ def save_conf(cfg, table, Y, report, level = "species"):
     Returns:
     Saves plot to directory
     """
-    
-    data_root = cfg['data_root']
-    
+      
     accuracy = round(report["accuracy"], 3)
     recall = round(report["macro avg"]["recall"], 3)
     n = len(Y)
@@ -159,13 +197,7 @@ def save_conf(cfg, table, Y, report, level = "species"):
     # Customize the appearance directly on the Axes object
     ax.set_xticklabels(Y, rotation=45, ha='right')
     
-    # Save the plot
-    conf_path = os.path.join(
-        data_root,
-        'eval',
-        f'plots/conf_{n}_{level}.png')
-    
-    plt.savefig(conf_path)
+    return plt.gcf(), n
 
 
 def save_conf_html(cfg, table, Y, report):
@@ -236,14 +268,17 @@ def save_conf_html(cfg, table, Y, report):
 def main():
 
     parser = argparse.ArgumentParser(description='Train deep learning model.')
-    parser.add_argument('--config', help='Path to config file', default='../configs/exp_resnet18.yaml')
+    parser.add_argument('--config', help='Path to config file', default='../configs')
+    parser.add_argument('--exp', help='Experiment name', default='exp_resnet18')
     args = parser.parse_args()
     
     # load config
     print(f'Using config "{args.config}"')
-    cfg = yaml.safe_load(open(args.config, 'r'))
-    
-    
+    cfg_path = os.path.join(
+        args.config,
+        args.exp)
+    cfg = yaml.safe_load(open(cfg_path + ".yaml"))
+        
     # setup entities
     dl_test = create_dataloader(cfg, split='test')
     
@@ -279,46 +314,10 @@ def main():
     
     all_true, all_preds, all_probs = predict(cfg, dl_test, model[0])
     
+    hierarchy_long, hierarchy_short = hierarchy(Y_ordered)
     
-    hierarchy_long = {"Phylum": Y_ordered.copy(),
-                      "Class": Y_ordered.copy(),
-                      "Order": Y_ordered.copy(),
-                      "Family": Y_ordered.copy(),
-                      "Genus": Y_ordered.copy(),
-                      "Species": Y_ordered.copy()}
-    
-    i = 1
-    for level in hierarchy_long:
-        for j in range(len(hierarchy_long[level])):
-            input_string = hierarchy_long[level][j]
-            parts = input_string.split("_")
-            hierarchy_long[level][j] = "_".join(parts[:i])
-        i += 1
-    
-    hierarchy_short = copy.deepcopy(hierarchy_long)
-    for level in hierarchy_short:
-        for j in range(len(hierarchy_short[level])):
-            input_string = hierarchy_short[level][j]
-            parts = input_string.split("_")
-            hierarchy_short[level][j] = parts[-1]
-    
-    
-    named_pred_long = {"Phylum": all_preds.copy(),
-                  "Class": all_preds.copy(),
-                  "Order": all_preds.copy(),
-                  "Family": all_preds.copy(),
-                  "Genus": all_preds.copy(),
-                  "Species": all_preds.copy()}
-    
-    named_pred_short = copy.deepcopy(named_pred_long)
-    named_true_long = copy.deepcopy(named_pred_long)
-    named_true_short = copy.deepcopy(named_pred_long)
-    
-    for level in hierarchy_long:
-        named_pred_long[level] = [hierarchy_long[level][index] for index in all_preds]
-        named_true_long[level] = [hierarchy_long[level][index] for index in all_true]
-        named_pred_short[level] = [hierarchy_short[level][index] for index in all_preds]
-        named_true_short[level] = [hierarchy_short[level][index] for index in all_true]
+    named_true_long, named_true_short = hierarchy_pred(all_true, hierarchy_long, hierarchy_short)
+    named_pred_long, named_pred_short = hierarchy_pred(all_preds, hierarchy_long, hierarchy_short)
     
     report = {"Phylum": {},
                   "Class": {},
@@ -332,10 +331,14 @@ def main():
                               named_pred_short[level],
                               output_dict=True)
 
-    report_path = os.path.join(
+    met_path = os.path.join(
         data_root,
         'eval',
-        'metrics/eval.yaml')
+        f'{args.exp}/metrics')
+    os.makedirs(met_path)
+    report_path = os.path.join(
+        met_path,
+        'eval.yaml')
     with open(report_path, 'w') as file:
         yaml.dump(report, file)
     
@@ -346,6 +349,11 @@ def main():
                   "Genus": [],
                   "Species": []}
     
+    conf_path = os.path.join(
+        data_root,
+        'eval',
+        f'{args.exp}/plots')
+    os.mkdir(conf_path)
     for level in conf_tab:
         conf_matrix = confusion_matrix(named_true_long[level],
                               named_pred_long[level])
@@ -354,9 +362,15 @@ def main():
         conf_tab[level] = conf_table(conf_matrix, long)
         short = pd.Series(hierarchy_short[level])
         short = short.unique()
-        save_conf(cfg, conf_tab[level], short, report[level], level)
+        figure, n = plt_conf(cfg, conf_tab[level], short, report[level], level)
+        # Save the plot
+        fig_path = os.path.join(
+            conf_path,
+            f'conf_{n}_{level}.png')
+               
+        figure.savefig(fig_path)
     
-    save_conf_html(cfg, conf_tab, short_Y_ordered, report)
+    #save_conf_html(cfg, conf_tab, short_Y_ordered, report)
 
 
 
