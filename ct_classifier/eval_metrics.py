@@ -51,7 +51,7 @@ def predict(cfg, dataLoader, model):
             data, labels = data.to(device), labels.to(device)
 
             # forward pass
-            prediction = model (data)
+            prediction = model(data)
             pred_label = torch.argmax(prediction, dim=1)
             
             all_probs.append(prediction)
@@ -358,9 +358,7 @@ def main():
     
     save_conf_html(cfg, conf_tab, short_Y_ordered, report)
 
-    # That's all, folks!
-        
-i = 1
+
 
 if __name__ == '__main__':
     # This block only gets executed if you call the "train.py" script directly
