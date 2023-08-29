@@ -1,4 +1,4 @@
-alldata = invertmatch
+alldata = invert_cleanlab
 
 allname = levels(as.factor(alldata$AllTaxa))
 hierarchylevels = c("Species", 
