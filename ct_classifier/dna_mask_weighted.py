@@ -25,6 +25,11 @@ from eval_metrics import predict, hierarchy, hierarchy_pred, conf_table, plt_con
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
 
+def temperature_scale(logits, temperature):
+    scaled_logits = logits / temperature
+    scaled_softmax = torch.nn.functional.softmax(scaled_logits, dim=-1)
+    return scaled_softmax
+
 def main():
 
     parser = argparse.ArgumentParser(description='Train deep learning model.')
