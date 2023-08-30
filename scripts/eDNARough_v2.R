@@ -81,6 +81,7 @@ match = c()
 i = 1
 phold = invertmatch[i,"Event"]
 subset_edna = ednamatch[which(ednamatch[,"event"] == invertmatch[i,"Event"]), c(13:25, 41)]
+
 for(i in 1:nrow(invertmatch)){
   #This if statement makes the whole thing go way faster
   if(phold != invertmatch[i,"Event"]){
@@ -90,30 +91,64 @@ for(i in 1:nrow(invertmatch)){
   match[i] = AllTaxa[i] %in% subset_edna
 }
 
-#Calculates eDNA TP rate (even though the name is FP). Doesn't seem to be used though
+ednamatch = data.frame(ednamatch)
+#Calculates eDNA TP rate. Doesn't seem to be used though
 invertmatch$AllTaxa = AllTaxa
-ednafp = c()
+ednatp = c()
 for(i in 1:nrow(ednamatch)){
-  ednafp[i] = any(ednamatch[i, c(13:25, 41)] %in% invertmatch[which(invertmatch[,"Event"] == ednamatch[i,"event"]), "AllTaxa"])
+  ednatp[i] = any(ednamatch[i, c(13:25, 41)] %in% invertmatch[which(invertmatch[,"Event"] == ednamatch[i,"event"]), "AllTaxa"])
 }
 
 ##################
 
 
-ednaclean = ednamatch[,c(13:26,28,29)]
-ednaclean = ednaclean[!duplicated(ednaclean[c(1:nrow(ednaclean)),]),] #For some reason I have to specify the rows or else it doesn't work
+ednaclean = ednamatch[,c(13:26,28,29,42)]
+# Code below used to be ednaclean = ednaclean[...]. Change back for stuff down the line possibly
+edna_rmdup = ednamatch[!duplicated(ednaclean[c(1:nrow(ednaclean)),]),] #For some reason I have to specify the rows or else it doesn't work
 
-test = ednamatch[!duplicated(ednamatch[c(1:nrow(ednamatch)),]),]
-
-LITLs = unique(invertmatch$AllTaxa)
+LITLs = unique(invertmatch$LKTL)
 ednaLITL = c()
 eventmatch = c()
-for(i in 1:nrow(ednaclean)){
-  ednaLITL[i] = ednaclean[i,max(which(ednaclean[i,] %in% LITLs))]
-  eventmatch[i] = ednaLITL[i] %in% invertmatch[which(invertmatch[,"Event"] == ednaclean[i,"event"]), "AllTaxa"]
+for(i in 1:nrow(edna_rmdup)){
+  ednaLITL[i] = edna_rmdup[i,max(which(edna_rmdup[i,] %in% LITLs))]
+  eventmatch[i] = ednaLITL[i] %in% invertmatch[which(invertmatch[,"Event"] == edna_rmdup[i,"event"]), "LKTL"]
 }
 
 ednaLITL = factor(ednaLITL, levels = LITLs)
+ohe = data.frame(model.matrix(~ ednaLITL - 1))
+colnames(ohe) = sub("ednaLITL", "", colnames(ohe))
+ohe$event = ednamatch$event
+
+ohe_rmdup = ohe[!duplicated(ednaclean[c(1:nrow(ednaclean)),]),]
+
+mhe <- ohe %>%
+  group_by(event) %>%
+  summarise_all(sum)
+
+mhe_rmdup = ohe_rmdup %>%
+  group_by(event) %>%
+  summarise_all(sum)
+
+write.csv(mhe, "mhe.csv", row.names = F)
+write.csv(mhe_rmdup, "mhe_lite.csv", row.names = F)
+
+
+# This next chunk of code makes a plot showing the distribution of how many hits
+# a group gets when it is detected (i.e. how many forks if it is present). I need
+# to modify this to include nesting (e.g. Arthropoda shows an average of 1 hit,
+# which obviously isn't true)
+library(reshape2)
+molten_mhe = melt(mhe_rmdup, id.vars = "event", variable.name = "Category", value.name = "Value")
+molten_mhe <- molten_mhe %>%
+  filter(Value > 0)
+
+ggplot(molten_mhe, aes(x = Category, y = Value)) +
+  geom_boxplot() +
+  labs(x = "Category", y = "Value") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
 ednaclean = data.frame(ednaclean, ednaLITL)
 
 eventclean = ednaclean[!duplicated(ednaclean[c(1:nrow(ednaclean)),c(16,17)]),]
