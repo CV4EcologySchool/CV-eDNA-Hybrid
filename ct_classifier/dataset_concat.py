@@ -59,7 +59,7 @@ class CTDataset(Dataset):
         file_name = cfg['file_name']
         imgFileName = meta[file_name]
         
-        self.data = list(zip(X.tolist(), imgFileName.tolist(), labelIndex.tolist()))
+        self.data = list(zip(X, imgFileName.tolist(), labelIndex.tolist()))
 
         # images = dict([[i['id'], i['file_name']] for i in meta['images']])          # image id to filename lookup
         # labels = dict([[c['id'], idx] for idx, c in enumerate(meta['categories'])]) # custom labelclass indices that start at zero

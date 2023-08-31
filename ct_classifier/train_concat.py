@@ -54,9 +54,8 @@ def load_model(cfg):
     '''
     
     tabular_model = TabularModel(input_size = cfg['num_col'], hidden_size = cfg['hidden_size'])
-    resnet_model = CustomResNet18(num_classes=128)
+    resnet_model = CustomResNet18()
     concatenated_model = ConcatenateModel(tabular_model, resnet_model, num_classes = cfg['num_classes'])
-    model_instance = CustomResNet18(cfg['num_classes'])         # create an object instance of our CustomResNet18 class
 
     # load latest model state
     model_states = glob.glob('model_states/*.pt')
@@ -68,7 +67,7 @@ def load_model(cfg):
         # load state dict and apply weights to model
         print(f'Resuming from epoch {start_epoch}')
         state = torch.load(open(f'model_states/{start_epoch}.pt', 'rb'), map_location='cpu')
-        model_instance.load_state_dict(state['model'])
+        concatenated_model.load_state_dict(state['model'])
 
     else:
         # no save state found; start anew
