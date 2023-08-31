@@ -41,12 +41,19 @@ class CTDataset(Dataset):
             cfg["annotate_root"],
             'train.csv' if self.split=='train' else 'valid.csv'
         )
+        trainPath = os.path.join(
+            os.path.dirname(annoPath),
+            'train.csv'
+        )
         meta = pd.read_csv(annoPath)
+        train  = pd.read_csv(trainPath)      
         
         class_labels = cfg['class_labels']
-        Y = meta[class_labels]
+        Y_train = train[class_labels]
         encoder = LabelEncoder()
-        encoder.fit(Y)
+        encoder.fit(Y_train)
+        
+        Y = meta[class_labels]
         labelIndex = encoder.transform(Y)
         
         file_name = cfg['file_name']
