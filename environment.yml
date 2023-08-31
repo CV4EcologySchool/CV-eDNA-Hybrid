@@ -1,0 +1,4 @@
+name: cv4e
+channels:
+  - defaults
+prefix: /home/jarrett/miniconda3/envs/cv4e
