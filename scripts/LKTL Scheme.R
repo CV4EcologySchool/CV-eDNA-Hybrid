@@ -51,7 +51,7 @@ for(i in 1:nrow(longlabels)){
   LKTL[i] = longlabels[i,longlabels$known[i]]
 }
 
-
+LKTL[which(LKTL == "Isopoda")] = "Crustacea"
 
 
 #Visualize LKTL labels
@@ -63,6 +63,7 @@ barplot(LKTL_Table$Freq, names.arg = LKTL_Table$LKTL,
         xlab = "Categories", ylab = "Abundance",
         col = "blue")
 
+invert_cleanlab$LKTL = LKTL
 
 #Create long LKTL labels 
 LKTL_Longdf = longhier(LKTL, hierarchy)
@@ -71,7 +72,6 @@ LKTL_Long = apply(LKTL_Longdf[, 1:6], 1, function(row) {
   paste(rev(row), collapse = "_")
 })
 
-invert_cleanlab$LKTL = LKTL
 invert_cleanlab$LKTL_Long = LKTL_Long
 
 

@@ -106,12 +106,14 @@ ednaclean = ednamatch[,c(13:26,28,29,42)]
 # Code below used to be ednaclean = ednaclean[...]. Change back for stuff down the line possibly
 edna_rmdup = ednamatch[!duplicated(ednaclean[c(1:nrow(ednaclean)),]),] #For some reason I have to specify the rows or else it doesn't work
 
-LITLs = unique(invertmatch$LKTL)
+edna_rmdup = edna_rmdup[-which(edna_rmdup$det_level == "phylum"),]
+
+LITLs = unique(invert_cleanlab$LKTL)
 ednaLITL = c()
 eventmatch = c()
 for(i in 1:nrow(edna_rmdup)){
   ednaLITL[i] = edna_rmdup[i,max(which(edna_rmdup[i,] %in% LITLs))]
-  eventmatch[i] = ednaLITL[i] %in% invertmatch[which(invertmatch[,"Event"] == edna_rmdup[i,"event"]), "LKTL"]
+  eventmatch[i] = ednaLITL[i] %in% invert_cleanlab[which(invert_cleanlab[,"Event"] == edna_rmdup[i,"event"]), "LKTL"]
 }
 
 ednaLITL = factor(ednaLITL, levels = LITLs)
