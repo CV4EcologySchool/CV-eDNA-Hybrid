@@ -36,10 +36,9 @@ class CustomResNet18(nn.Module):
         # replace the very last layer from the original, 1000-class output
         # ImageNet to a new one that outputs num_classes
         last_layer = self.feature_extractor.fc                          # tip: print(self.feature_extractor) to get info on how model is set up
-        in_features = last_layer.in_features                            # number of input dimensions to last (classifier) layer
+        self.in_features = last_layer.in_features                            # number of input dimensions to last (classifier) layer
         self.feature_extractor.fc = nn.Identity()                       # discard last layer...
 
-        self.out_layer = nn.Linear(in_features, 128)           # ...and create a new one
     
 
     def forward(self, x):
@@ -51,9 +50,8 @@ class CustomResNet18(nn.Module):
         '''
         # x.size(): [B x 3 x W x H]
         features = self.feature_extractor(x)    # features.size(): [B x 512 x W x H]
-        output = self.out_layer(features)  # prediction.size(): [B x num_classes]
 
-        return output
+        return features
     
 # Concatenated Model
 class ConcatenateModel(nn.Module):
@@ -62,7 +60,7 @@ class ConcatenateModel(nn.Module):
         self.tabular_model = tabular_model
         self.resnet_model = resnet_model
         self.fc = nn.Sequential(
-            nn.Linear(tabular_model.fc[0].out_features + resnet_model.out_layer.out_features, 128),
+            nn.Linear(tabular_model.fc[0].out_features + resnet_model.in_features, 128),
             nn.BatchNorm1d(128),
             nn.ReLU(),
             nn.Dropout(0.3),

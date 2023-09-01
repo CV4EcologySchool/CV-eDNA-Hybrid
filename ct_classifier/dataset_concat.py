@@ -6,6 +6,7 @@ Created on Thu Aug 31 11:01:23 2023
 """
 
 import os
+import torch
 import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
@@ -46,7 +47,8 @@ class CTDataset(Dataset):
         
         X = meta.iloc[:, data_cols]
         # convert to numpy arrays
-        X = np.array(X)
+        X = X.values
+        X = torch.tensor(X, dtype=torch.float32)
         
         class_labels = cfg['class_labels']
         Y_train = train[class_labels]
