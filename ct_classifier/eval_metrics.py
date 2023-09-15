@@ -140,7 +140,7 @@ def conf_table(conf_matrix, Y, prop = True):
     
     # If prop = True, calculate proportions
     if prop:
-        conf_df['prop'] = conf_df['Count'] / conf_df.groupby('Reference')['Count'].transform('sum')
+        conf_df['prop'] = conf_df['Count'] / (conf_df.groupby('Reference')['Count'].transform('sum') + 0.1)
         
         # Create conf_table
         conf_table = conf_df.pivot_table(index='Reference', columns='Prediction', values='prop', fill_value=0)
@@ -269,7 +269,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Train deep learning model.')
     parser.add_argument('--config', help='Path to config file', default='../configs')
-    parser.add_argument('--exp', help='Experiment name', default='exp_resnet18')
+    parser.add_argument('--exp', help='Experiment name', default='exp_resnet18_37141')
     args = parser.parse_args()
     
     # load config
@@ -293,17 +293,22 @@ def main():
         cfg["annotate_root"],
         'valid.csv'
     )
-    meta = pd.read_csv(annoPath)
     
+    trainPath = os.path.join(
+        os.path.dirname(annoPath),
+        'train.csv'
+    )
+    train  = pd.read_csv(trainPath)      
+      
     class_labels = cfg['class_labels']
-    Y = meta[class_labels]
+    Y = train[class_labels]
     Y = Y.unique()
     encoder = LabelEncoder()
     encoder.fit(Y)
     labelIndex = encoder.transform(Y)
     
     short_labels = cfg['short_labels']
-    short_Y = meta[short_labels]
+    short_Y = train[short_labels]
     short_Y = short_Y.unique()
     
     Y_ordered = sorted(Y)
@@ -318,7 +323,7 @@ def main():
     
     named_true_long, named_true_short = hierarchy_pred(all_true, hierarchy_long, hierarchy_short)
     named_pred_long, named_pred_short = hierarchy_pred(all_preds, hierarchy_long, hierarchy_short)
-    
+
     report = {"Phylum": {},
                   "Class": {},
                   "Order": {},
@@ -329,7 +334,8 @@ def main():
     for level in report:
         report[level] = classification_report(named_true_short[level],
                               named_pred_short[level],
-                              output_dict=True)
+                              output_dict=True,
+                              zero_division = 1)
 
     met_path = os.path.join(
         data_root,
@@ -352,17 +358,18 @@ def main():
     conf_path = os.path.join(
         data_root,
         'eval',
-        f'{args.exp}/plots')
+        f'{args.exp}/plots') 
     os.mkdir(conf_path)
     for level in conf_tab:
         conf_matrix = confusion_matrix(named_true_long[level],
-                              named_pred_long[level])
+                              named_pred_long[level],
+                              labels = sorted(list(set(hierarchy_long[level]))))
         long = pd.Series(hierarchy_long[level])
         long = long.unique()
         conf_tab[level] = conf_table(conf_matrix, long)
         short = pd.Series(hierarchy_short[level])
         short = short.unique()
-        figure, n = plt_conf(cfg, conf_tab[level], short, report[level], level)
+        figure, n = plt_conf(conf_tab[level], short, report[level], level)
         # Save the plot
         fig_path = os.path.join(
             conf_path,
