@@ -1,3 +1,4 @@
+library(caret)
 # Sampling by event
 
 events = as.data.frame(table(invert_cleanlab$Event))
@@ -54,8 +55,19 @@ abund_combined = abund_combined[,-3]
 abund_combined$ratio = abund_combined$Freq/abund_combined$Freq.1
 
 
-write.csv(train_split1, "train.csv")
-write.csv(val_split1, "valid.csv")
+mhe = read.csv("C:/Users/jarre/ownCloud/CV-eDNA/splits/LKTL-37141/dna_mhe.csv")
+event_names = events$Var1
+mhe$Event = event_names
+
+train_split1 = merge(train_split1, mhe, by = "Event", all = F)
+val_split1 = merge(val_split1, mhe, by = "Event", all = F)
+
+normParam <- preProcess(train_split1[,89:125])
+val_split1[,89:125] <- predict(normParam, val_split1[,89:125])
+train_split1[,89:125] <- predict(normParam, train_split1[,89:125])
+
+write.csv(train_split1, "train.csv", row.names = F)
+write.csv(val_split1, "valid.csv", row.names = F)
 
 dna_train = edna_rmdup[which(edna_rmdup$event %!in% sampled_events),]
 dna_train_LKTL_Long = dna_LKTL_Long[which(edna_rmdup$event %!in% sampled_events)]

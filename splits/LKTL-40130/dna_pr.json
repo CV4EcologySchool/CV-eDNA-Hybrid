@@ -1,0 +1,154 @@
+{
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Neivamyrmex_Neivamyrmex": {
+        "precision": 1.0,
+        "recall": 0.16666666666666666
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Formicinae_Formicinae": {
+        "precision": 0.375,
+        "recall": 0.11538461538461539
+    },
+    "Arthropoda_Insecta_Hemiptera_Hemiptera_Hemiptera_Hemiptera": {
+        "precision": 0.52,
+        "recall": 0.6190476190476191
+    },
+    "Mollusca_Gastropoda_Gastropoda_Gastropoda_Gastropoda_Gastropoda": {
+        "precision": 0.7058823529411765,
+        "recall": 0.6206896551724138
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Aphaenogaster_Aphaenogaster": {
+        "precision": 1.0,
+        "recall": 0.05263157894736842
+    },
+    "Arthropoda_Insecta_Coleoptera_Staphylinidae_Staphylinidae_Staphylinidae": {
+        "precision": 0.74,
+        "recall": 0.45121951219512196
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Solenopsis_Solenopsis": {
+        "precision": 0.42857142857142855,
+        "recall": 0.08823529411764706
+    },
+    "Arthropoda_Arachnida_Araneae_Araneae_Araneae_Araneae": {
+        "precision": 0.9465648854961832,
+        "recall": 0.8732394366197183
+    },
+    "Arthropoda_Insecta_Coleoptera_Coleoptera_Coleoptera_Coleoptera": {
+        "precision": 0.898989898989899,
+        "recall": 0.6793893129770993
+    },
+    "Arthropoda_Malacostraca_Isopoda_Isopoda_Isopoda_Isopoda": {
+        "precision": 0.8928571428571429,
+        "recall": 0.6097560975609756
+    },
+    "Arthropoda_Arachnida_Arachnida_Arachnida_Arachnida_Arachnida": {
+        "precision": 0.25,
+        "recall": 0.09375
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Camponotus_Camponotus": {
+        "precision": 1.0,
+        "recall": 0.11627906976744186
+    },
+    "Arthropoda_Arachnida_Acari_Acari_Acari_Acari": {
+        "precision": 0.7974683544303798,
+        "recall": 0.5625
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Novomessor_Novomessor": {
+        "precision": 0.375,
+        "recall": 1.0
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Myrmicinae_Myrmicinae": {
+        "precision": 0.5454545454545454,
+        "recall": 0.0625
+    },
+    "Arthropoda_Insecta_Zygentoma_Zygentoma_Zygentoma_Zygentoma": {
+        "precision": 0.0,
+        "recall": 0.0
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Pogonomyrmex_Pogonomyrmex": {
+        "precision": 0.6666666666666666,
+        "recall": 0.10526315789473684
+    },
+    "Arthropoda_Collembola_Collembola_Collembola_Collembola_Collembola": {
+        "precision": 0.7238095238095238,
+        "recall": 0.7835051546391752
+    },
+    "Arthropoda_Insecta_Coleoptera_Scarabaeidae_Canthon_Canthon viridis": {
+        "precision": 0.0,
+        "recall": 0.0
+    },
+    "Arthropoda_Diplopoda_Diplopoda_Diplopoda_Diplopoda_Diplopoda": {
+        "precision": 0.78125,
+        "recall": 0.352112676056338
+    },
+    "Arthropoda_Insecta_Coleoptera_Tenebrionidae_Tenebrionidae_Tenebrionidae": {
+        "precision": 0.1702127659574468,
+        "recall": 0.42105263157894735
+    },
+    "Annelida_Annelida_Annelida_Annelida_Annelida_Annelida": {
+        "precision": 0.5714285714285714,
+        "recall": 0.7804878048780488
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Forelius_Forelius": {
+        "precision": 0.25,
+        "recall": 1.0
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Dorymyrmex_Dorymyrmex": {
+        "precision": 0.0,
+        "recall": 0.0
+    },
+    "Arthropoda_Insecta_Orthoptera_Orthoptera_Orthoptera_Orthoptera": {
+        "precision": 0.7767857142857143,
+        "recall": 0.8787878787878788
+    },
+    "Arthropoda_Arachnida_Opiliones_Opiliones_Opiliones_Opiliones": {
+        "precision": 0.8235294117647058,
+        "recall": 0.2222222222222222
+    },
+    "Arthropoda_Arthropoda_Arthropoda_Arthropoda_Arthropoda_Arthropoda": {
+        "precision": 0.9444444444444444,
+        "recall": 0.1223021582733813
+    },
+    "Arthropoda_Insecta_Diptera_Diptera_Diptera_Diptera": {
+        "precision": 0.9492753623188406,
+        "recall": 0.9225352112676056
+    },
+    "Arthropoda_Insecta_Insecta_Insecta_Insecta_Insecta": {
+        "precision": 0.94,
+        "recall": 0.6762589928057554
+    },
+    "Arthropoda_Insecta_Lepidoptera_Lepidoptera_Lepidoptera_Lepidoptera": {
+        "precision": 0.23,
+        "recall": 0.8518518518518519
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Formicidae_Formicidae": {
+        "precision": 1.0,
+        "recall": 0.06451612903225806
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Crematogaster_Crematogaster": {
+        "precision": 1.0,
+        "recall": 0.027777777777777776
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Formica_Formica": {
+        "precision": 0.9,
+        "recall": 0.2903225806451613
+    },
+    "Arthropoda_Insecta_Hymenoptera_Formicidae_Pheidole_Pheidole": {
+        "precision": 0.4,
+        "recall": 0.4
+    },
+    "Arthropoda_Arachnida_Opilioacarida_Opilioacarida_Opilioacarida_Opilioacarida": {
+        "precision": 0.0,
+        "recall": 0.0
+    },
+    "Arthropoda_Insecta_Coleoptera_Scarabaeidae_Canthon_Canthon": {
+        "precision": 0.0,
+        "recall": 0.0
+    },
+    "Arthropoda_Insecta_Hymenoptera_Hymenoptera_Hymenoptera_Hymenoptera": {
+        "precision": 0.75,
+        "recall": 0.24489795918367346
+    },
+    "Arthropoda_Insecta_Coleoptera_Scarabaeidae_Scarabaeidae_Scarabaeidae": {
+        "precision": 0.25,
+        "recall": 0.03333333333333333
+    }
+}
