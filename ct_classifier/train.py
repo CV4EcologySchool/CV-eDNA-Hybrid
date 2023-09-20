@@ -17,6 +17,7 @@ from torch.utils.data import DataLoader
 from torch.optim import SGD
 
 # let's import our own classes and functions!
+os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier")
 from util import init_seed
 from dataset import CTDataset
 from model import CustomResNet18
@@ -261,6 +262,9 @@ def main():
 
     # we have everything now: data loaders, model, optimizer; let's do the epochs!
     numEpochs = cfg['num_epochs']
+    best_val_loss = float('inf')
+    patience = 10
+    num_epochs_without_improvement = 0
     while current_epoch < numEpochs:
         current_epoch += 1
         print(f'Epoch {current_epoch}/{numEpochs}')
@@ -268,14 +272,26 @@ def main():
         loss_train, oa_train = train(cfg, dl_train, model, optim)
         loss_val, oa_val = validate(cfg, dl_val, model)
 
-        # combine stats and save
-        stats = {
-            'loss_train': loss_train,
-            'loss_val': loss_val,
-            'oa_train': oa_train,
-            'oa_val': oa_val
-        }
-        save_model(cfg, current_epoch, model, stats)
+        # Check if validation loss has improved
+        if loss_val < best_val_loss:
+            best_val_loss = loss_val
+            num_epochs_without_improvement = 0
+    
+            # Save the model since it's an improvement
+            stats = {
+                'loss_train': loss_train,
+                'loss_val': loss_val,
+                'oa_train': oa_train,
+                'oa_val': oa_val
+            }
+            save_model(cfg, current_epoch, model, stats)
+        else:
+            num_epochs_without_improvement += 1
+    
+        # Check for early stopping
+        if num_epochs_without_improvement >= patience:
+            print(f'Validation loss has not improved for {patience} epochs. Early stopping.')
+            break
     
 
     # That's all, folks!
