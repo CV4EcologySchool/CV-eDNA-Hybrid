@@ -1,0 +1,712 @@
+Class:
+  Annelida:
+    f1-score: 0.07481296758104737
+    precision: 0.039473684210526314
+    recall: 0.7142857142857143
+    support: 21
+  Arachnida:
+    f1-score: 0.7122849139655862
+    precision: 0.6872586872586872
+    recall: 0.739202657807309
+    support: 1204
+  Arthropoda:
+    f1-score: 0.06451612903225806
+    precision: 0.2
+    recall: 0.038461538461538464
+    support: 312
+  Collembola:
+    f1-score: 0.5880980163360561
+    precision: 0.4675324675324675
+    recall: 0.7924528301886793
+    support: 318
+  Diplopoda:
+    f1-score: 0.9
+    precision: 0.9171974522292994
+    recall: 0.8834355828220859
+    support: 163
+  Gastropoda:
+    f1-score: 0.9230769230769231
+    precision: 0.9949748743718593
+    recall: 0.8608695652173913
+    support: 230
+  Insecta:
+    f1-score: 0.8295847750865051
+    precision: 0.8792787286063569
+    recall: 0.785207423580786
+    support: 3664
+  Malacostraca:
+    f1-score: 0.8584070796460178
+    precision: 0.8220338983050848
+    recall: 0.8981481481481481
+    support: 108
+  accuracy: 0.7450166112956811
+  macro avg:
+    f1-score: 0.6188476005905492
+    precision: 0.6259687240642852
+    recall: 0.7140079325639566
+    support: 6020
+  weighted avg:
+    f1-score: 0.7570798310653014
+    precision: 0.7854099767363372
+    recall: 0.7450166112956811
+    support: 6020
+Family:
+  Acari:
+    f1-score: 0.7132564841498559
+    precision: 0.7226277372262774
+    recall: 0.7041251778093883
+    support: 703
+  Annelida:
+    f1-score: 0.07481296758104737
+    precision: 0.039473684210526314
+    recall: 0.7142857142857143
+    support: 21
+  Arachnida:
+    f1-score: 0.13513513513513511
+    precision: 0.23809523809523808
+    recall: 0.09433962264150944
+    support: 53
+  Araneae:
+    f1-score: 0.5663716814159291
+    precision: 0.45960502692998206
+    recall: 0.7377521613832853
+    support: 347
+  Arthropoda:
+    f1-score: 0.06451612903225806
+    precision: 0.2
+    recall: 0.038461538461538464
+    support: 312
+  Coleoptera:
+    f1-score: 0.3600493218249075
+    precision: 0.2597864768683274
+    recall: 0.5863453815261044
+    support: 249
+  Collembola:
+    f1-score: 0.5880980163360561
+    precision: 0.4675324675324675
+    recall: 0.7924528301886793
+    support: 318
+  Diplopoda:
+    f1-score: 0.9
+    precision: 0.9171974522292994
+    recall: 0.8834355828220859
+    support: 163
+  Diptera:
+    f1-score: 0.6895522388059702
+    precision: 0.7252747252747253
+    recall: 0.6571834992887624
+    support: 703
+  Formicidae:
+    f1-score: 0.5909561615464273
+    precision: 0.9294245385450597
+    recall: 0.4331983805668016
+    support: 1976
+  Gastropoda:
+    f1-score: 0.9230769230769231
+    precision: 0.9949748743718593
+    recall: 0.8608695652173913
+    support: 230
+  Hemiptera:
+    f1-score: 0.09448818897637795
+    precision: 0.06741573033707865
+    recall: 0.15789473684210525
+    support: 38
+  Hymenoptera:
+    f1-score: 0.20952380952380956
+    precision: 0.20754716981132076
+    recall: 0.21153846153846154
+    support: 104
+  Insecta:
+    f1-score: 0.0959409594095941
+    precision: 0.057777777777777775
+    recall: 0.2826086956521739
+    support: 138
+  Isopoda:
+    f1-score: 0.8584070796460178
+    precision: 0.8220338983050848
+    recall: 0.8981481481481481
+    support: 108
+  Lepidoptera:
+    f1-score: 0.6538461538461539
+    precision: 0.6538461538461539
+    recall: 0.6538461538461539
+    support: 26
+  Opilioacarida:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 36
+  Opiliones:
+    f1-score: 0.39583333333333337
+    precision: 0.6129032258064516
+    recall: 0.2923076923076923
+    support: 65
+  Orthoptera:
+    f1-score: 0.5367965367965367
+    precision: 0.41333333333333333
+    recall: 0.7654320987654321
+    support: 81
+  Scarabaeidae:
+    f1-score: 0.043290043290043295
+    precision: 1.0
+    recall: 0.022123893805309734
+    support: 226
+  Staphylinidae:
+    f1-score: 0.5032258064516129
+    precision: 0.4875
+    recall: 0.52
+    support: 75
+  Tenebrionidae:
+    f1-score: 0.7058823529411764
+    precision: 0.8571428571428571
+    recall: 0.6
+    support: 30
+  Zygentoma:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 18
+  accuracy: 0.5257475083056479
+  macro avg:
+    f1-score: 0.42187214448344185
+    precision: 0.48406488554973137
+    recall: 0.47418910152594507
+    support: 6020
+  weighted avg:
+    f1-score: 0.5483742153913815
+    precision: 0.6945106337250883
+    recall: 0.5257475083056479
+    support: 6020
+Genus:
+  Acari:
+    f1-score: 0.7132564841498559
+    precision: 0.7226277372262774
+    recall: 0.7041251778093883
+    support: 703
+  Annelida:
+    f1-score: 0.07481296758104737
+    precision: 0.039473684210526314
+    recall: 0.7142857142857143
+    support: 21
+  Aphaenogaster:
+    f1-score: 0.5
+    precision: 1.0
+    recall: 0.3333333333333333
+    support: 21
+  Arachnida:
+    f1-score: 0.13513513513513511
+    precision: 0.23809523809523808
+    recall: 0.09433962264150944
+    support: 53
+  Araneae:
+    f1-score: 0.5663716814159291
+    precision: 0.45960502692998206
+    recall: 0.7377521613832853
+    support: 347
+  Arthropoda:
+    f1-score: 0.06451612903225806
+    precision: 0.2
+    recall: 0.038461538461538464
+    support: 312
+  Camponotus:
+    f1-score: 0.2857142857142857
+    precision: 0.7142857142857143
+    recall: 0.17857142857142858
+    support: 28
+  Canthon:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 196
+  Coleoptera:
+    f1-score: 0.3600493218249075
+    precision: 0.2597864768683274
+    recall: 0.5863453815261044
+    support: 249
+  Collembola:
+    f1-score: 0.5880980163360561
+    precision: 0.4675324675324675
+    recall: 0.7924528301886793
+    support: 318
+  Crematogaster:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 117
+  Diplopoda:
+    f1-score: 0.9
+    precision: 0.9171974522292994
+    recall: 0.8834355828220859
+    support: 163
+  Diptera:
+    f1-score: 0.6895522388059702
+    precision: 0.7252747252747253
+    recall: 0.6571834992887624
+    support: 703
+  Dorymyrmex:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 76
+  Forelius:
+    f1-score: 0.16766467065868262
+    precision: 0.09210526315789473
+    recall: 0.9333333333333333
+    support: 15
+  Formica:
+    f1-score: 0.45217391304347826
+    precision: 0.3939393939393939
+    recall: 0.5306122448979592
+    support: 49
+  Formicidae:
+    f1-score: 0.166015625
+    precision: 0.3794642857142857
+    recall: 0.10625
+    support: 800
+  Formicinae:
+    f1-score: 0.01904761904761905
+    precision: 0.012195121951219513
+    recall: 0.043478260869565216
+    support: 23
+  Gastropoda:
+    f1-score: 0.9230769230769231
+    precision: 0.9949748743718593
+    recall: 0.8608695652173913
+    support: 230
+  Hemiptera:
+    f1-score: 0.09448818897637795
+    precision: 0.06741573033707865
+    recall: 0.15789473684210525
+    support: 38
+  Hymenoptera:
+    f1-score: 0.20952380952380956
+    precision: 0.20754716981132076
+    recall: 0.21153846153846154
+    support: 104
+  Insecta:
+    f1-score: 0.0959409594095941
+    precision: 0.057777777777777775
+    recall: 0.2826086956521739
+    support: 138
+  Isopoda:
+    f1-score: 0.8584070796460178
+    precision: 0.8220338983050848
+    recall: 0.8981481481481481
+    support: 108
+  Lepidoptera:
+    f1-score: 0.6538461538461539
+    precision: 0.6538461538461539
+    recall: 0.6538461538461539
+    support: 26
+  Myrmicinae:
+    f1-score: 0.032786885245901634
+    precision: 0.1134020618556701
+    recall: 0.01916376306620209
+    support: 574
+  Neivamyrmex:
+    f1-score: 0.21621621621621623
+    precision: 0.5714285714285714
+    recall: 0.13333333333333333
+    support: 30
+  Novomessor:
+    f1-score: 0.4375
+    precision: 0.3010752688172043
+    recall: 0.8
+    support: 35
+  Opilioacarida:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 36
+  Opiliones:
+    f1-score: 0.39583333333333337
+    precision: 0.6129032258064516
+    recall: 0.2923076923076923
+    support: 65
+  Orthoptera:
+    f1-score: 0.5367965367965367
+    precision: 0.41333333333333333
+    recall: 0.7654320987654321
+    support: 81
+  Pheidole:
+    f1-score: 0.038834951456310676
+    precision: 0.03571428571428571
+    recall: 0.0425531914893617
+    support: 47
+  Pogonomyrmex:
+    f1-score: 0.15267175572519084
+    precision: 0.4166666666666667
+    recall: 0.09345794392523364
+    support: 107
+  Scarabaeidae:
+    f1-score: 0.2857142857142857
+    precision: 1.0
+    recall: 0.16666666666666666
+    support: 30
+  Solenopsis:
+    f1-score: 0.014285714285714285
+    precision: 0.011627906976744186
+    recall: 0.018518518518518517
+    support: 54
+  Staphylinidae:
+    f1-score: 0.5032258064516129
+    precision: 0.4875
+    recall: 0.52
+    support: 75
+  Tenebrionidae:
+    f1-score: 0.7058823529411764
+    precision: 0.8571428571428571
+    recall: 0.6
+    support: 30
+  Zygentoma:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 18
+  accuracy: 0.41578073089700995
+  macro avg:
+    f1-score: 0.3199307848754157
+    precision: 0.3850262802596328
+    recall: 0.3743324075332314
+    support: 6020
+  weighted avg:
+    f1-score: 0.39339610880987796
+    precision: 0.4407991261265716
+    recall: 0.41578073089700995
+    support: 6020
+Order:
+  Acari:
+    f1-score: 0.7132564841498559
+    precision: 0.7226277372262774
+    recall: 0.7041251778093883
+    support: 703
+  Annelida:
+    f1-score: 0.07481296758104737
+    precision: 0.039473684210526314
+    recall: 0.7142857142857143
+    support: 21
+  Arachnida:
+    f1-score: 0.13513513513513511
+    precision: 0.23809523809523808
+    recall: 0.09433962264150944
+    support: 53
+  Araneae:
+    f1-score: 0.5663716814159291
+    precision: 0.45960502692998206
+    recall: 0.7377521613832853
+    support: 347
+  Arthropoda:
+    f1-score: 0.06451612903225806
+    precision: 0.2
+    recall: 0.038461538461538464
+    support: 312
+  Coleoptera:
+    f1-score: 0.6298076923076923
+    precision: 0.5883233532934131
+    recall: 0.6775862068965517
+    support: 580
+  Collembola:
+    f1-score: 0.5880980163360561
+    precision: 0.4675324675324675
+    recall: 0.7924528301886793
+    support: 318
+  Diplopoda:
+    f1-score: 0.9
+    precision: 0.9171974522292994
+    recall: 0.8834355828220859
+    support: 163
+  Diptera:
+    f1-score: 0.6895522388059702
+    precision: 0.7252747252747253
+    recall: 0.6571834992887624
+    support: 703
+  Gastropoda:
+    f1-score: 0.9230769230769231
+    precision: 0.9949748743718593
+    recall: 0.8608695652173913
+    support: 230
+  Hemiptera:
+    f1-score: 0.09448818897637795
+    precision: 0.06741573033707865
+    recall: 0.15789473684210525
+    support: 38
+  Hymenoptera:
+    f1-score: 0.6070164145477953
+    precision: 0.9182083739045764
+    recall: 0.4533653846153846
+    support: 2080
+  Insecta:
+    f1-score: 0.0959409594095941
+    precision: 0.057777777777777775
+    recall: 0.2826086956521739
+    support: 138
+  Isopoda:
+    f1-score: 0.8584070796460178
+    precision: 0.8220338983050848
+    recall: 0.8981481481481481
+    support: 108
+  Lepidoptera:
+    f1-score: 0.6538461538461539
+    precision: 0.6538461538461539
+    recall: 0.6538461538461539
+    support: 26
+  Opilioacarida:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 36
+  Opiliones:
+    f1-score: 0.39583333333333337
+    precision: 0.6129032258064516
+    recall: 0.2923076923076923
+    support: 65
+  Orthoptera:
+    f1-score: 0.5367965367965367
+    precision: 0.41333333333333333
+    recall: 0.7654320987654321
+    support: 81
+  Zygentoma:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 18
+  accuracy: 0.5672757475083057
+  macro avg:
+    f1-score: 0.44878715444193024
+    precision: 0.4683485817091708
+    recall: 0.5086365689037894
+    support: 6020
+  weighted avg:
+    f1-score: 0.5948872578168967
+    precision: 0.7011567384346868
+    recall: 0.5672757475083057
+    support: 6020
+Phylum:
+  Annelida:
+    f1-score: 0.07481296758104737
+    precision: 0.039473684210526314
+    recall: 0.7142857142857143
+    support: 21
+  Arthropoda:
+    f1-score: 0.9677074041034791
+    precision: 0.9968755743429517
+    recall: 0.9401976079043162
+    support: 5769
+  Mollusca:
+    f1-score: 0.9230769230769231
+    precision: 0.9949748743718593
+    recall: 0.8608695652173913
+    support: 230
+  accuracy: 0.9363787375415282
+  macro avg:
+    f1-score: 0.6551990982538165
+    precision: 0.6771080443084457
+    recall: 0.8384509624691406
+    support: 6020
+  weighted avg:
+    f1-score: 0.9628875048006421
+    precision: 0.9934631822023982
+    recall: 0.9363787375415282
+    support: 6020
+Species:
+  Acari:
+    f1-score: 0.7132564841498559
+    precision: 0.7226277372262774
+    recall: 0.7041251778093883
+    support: 703
+  Annelida:
+    f1-score: 0.07481296758104737
+    precision: 0.039473684210526314
+    recall: 0.7142857142857143
+    support: 21
+  Aphaenogaster:
+    f1-score: 0.5
+    precision: 1.0
+    recall: 0.3333333333333333
+    support: 21
+  Arachnida:
+    f1-score: 0.13513513513513511
+    precision: 0.23809523809523808
+    recall: 0.09433962264150944
+    support: 53
+  Araneae:
+    f1-score: 0.5663716814159291
+    precision: 0.45960502692998206
+    recall: 0.7377521613832853
+    support: 347
+  Arthropoda:
+    f1-score: 0.06451612903225806
+    precision: 0.2
+    recall: 0.038461538461538464
+    support: 312
+  Camponotus:
+    f1-score: 0.2857142857142857
+    precision: 0.7142857142857143
+    recall: 0.17857142857142858
+    support: 28
+  Canthon:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 140
+  Canthon viridis:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 56
+  Coleoptera:
+    f1-score: 0.3600493218249075
+    precision: 0.2597864768683274
+    recall: 0.5863453815261044
+    support: 249
+  Collembola:
+    f1-score: 0.5880980163360561
+    precision: 0.4675324675324675
+    recall: 0.7924528301886793
+    support: 318
+  Crematogaster:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 117
+  Diplopoda:
+    f1-score: 0.9
+    precision: 0.9171974522292994
+    recall: 0.8834355828220859
+    support: 163
+  Diptera:
+    f1-score: 0.6895522388059702
+    precision: 0.7252747252747253
+    recall: 0.6571834992887624
+    support: 703
+  Dorymyrmex:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 76
+  Forelius:
+    f1-score: 0.16766467065868262
+    precision: 0.09210526315789473
+    recall: 0.9333333333333333
+    support: 15
+  Formica:
+    f1-score: 0.45217391304347826
+    precision: 0.3939393939393939
+    recall: 0.5306122448979592
+    support: 49
+  Formicidae:
+    f1-score: 0.166015625
+    precision: 0.3794642857142857
+    recall: 0.10625
+    support: 800
+  Formicinae:
+    f1-score: 0.01904761904761905
+    precision: 0.012195121951219513
+    recall: 0.043478260869565216
+    support: 23
+  Gastropoda:
+    f1-score: 0.9230769230769231
+    precision: 0.9949748743718593
+    recall: 0.8608695652173913
+    support: 230
+  Hemiptera:
+    f1-score: 0.09448818897637795
+    precision: 0.06741573033707865
+    recall: 0.15789473684210525
+    support: 38
+  Hymenoptera:
+    f1-score: 0.20952380952380956
+    precision: 0.20754716981132076
+    recall: 0.21153846153846154
+    support: 104
+  Insecta:
+    f1-score: 0.0959409594095941
+    precision: 0.057777777777777775
+    recall: 0.2826086956521739
+    support: 138
+  Isopoda:
+    f1-score: 0.8584070796460178
+    precision: 0.8220338983050848
+    recall: 0.8981481481481481
+    support: 108
+  Lepidoptera:
+    f1-score: 0.6538461538461539
+    precision: 0.6538461538461539
+    recall: 0.6538461538461539
+    support: 26
+  Myrmicinae:
+    f1-score: 0.032786885245901634
+    precision: 0.1134020618556701
+    recall: 0.01916376306620209
+    support: 574
+  Neivamyrmex:
+    f1-score: 0.21621621621621623
+    precision: 0.5714285714285714
+    recall: 0.13333333333333333
+    support: 30
+  Novomessor:
+    f1-score: 0.4375
+    precision: 0.3010752688172043
+    recall: 0.8
+    support: 35
+  Opilioacarida:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 36
+  Opiliones:
+    f1-score: 0.39583333333333337
+    precision: 0.6129032258064516
+    recall: 0.2923076923076923
+    support: 65
+  Orthoptera:
+    f1-score: 0.5367965367965367
+    precision: 0.41333333333333333
+    recall: 0.7654320987654321
+    support: 81
+  Pheidole:
+    f1-score: 0.038834951456310676
+    precision: 0.03571428571428571
+    recall: 0.0425531914893617
+    support: 47
+  Pogonomyrmex:
+    f1-score: 0.15267175572519084
+    precision: 0.4166666666666667
+    recall: 0.09345794392523364
+    support: 107
+  Scarabaeidae:
+    f1-score: 0.2857142857142857
+    precision: 1.0
+    recall: 0.16666666666666666
+    support: 30
+  Solenopsis:
+    f1-score: 0.014285714285714285
+    precision: 0.011627906976744186
+    recall: 0.018518518518518517
+    support: 54
+  Staphylinidae:
+    f1-score: 0.5032258064516129
+    precision: 0.4875
+    recall: 0.52
+    support: 75
+  Tenebrionidae:
+    f1-score: 0.7058823529411764
+    precision: 0.8571428571428571
+    recall: 0.6
+    support: 30
+  Zygentoma:
+    f1-score: 0.0
+    precision: 0.0
+    recall: 0.0
+    support: 18
+  accuracy: 0.41578073089700995
+  macro avg:
+    f1-score: 0.3115115536944837
+    precision: 0.37489400972648446
+    recall: 0.3644815547034095
+    support: 6020
+  weighted avg:
+    f1-score: 0.39339610880987796
+    precision: 0.4407991261265716
+    recall: 0.41578073089700995
+    support: 6020
