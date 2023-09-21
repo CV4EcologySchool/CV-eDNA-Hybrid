@@ -14,9 +14,9 @@ import json
 import os
 
 # Sample data
-with open(r"C:\Users\jarre\ownCloud\CV-eDNA\splits\LKTL-37141\image_multilab_nosplit.json") as json_file:
+with open(r"C:\Carabid_Data\CV-eDNA\splits\LKTL-37141\image_multilab_nosplit.json") as json_file:
     image_multilab = json.load(json_file)
-with open(r"C:\Users\jarre\ownCloud\CV-eDNA\splits\LKTL-37141\dna_multilab_nosplit.json") as json_file:
+with open(r"C:\Carabid_Data\CV-eDNA\splits\LKTL-37141\dna_multilab_nosplit.json") as json_file:
     dna_multilab = json.load(json_file)
 
 ground_truth = [value for value in image_multilab.values()]
@@ -39,8 +39,10 @@ def label_to_binary(label_list):
 ground_truth_bin = np.array([label_to_binary(labels) for labels in ground_truth])
 predicted_labels_bin = np.array([label_to_binary(labels) for labels in predicted_labels])
 
-df = pd.DataFrame(predicted_labels_bin)
+df_array = np.column_stack((list(image_multilab.keys()), predicted_labels_bin))
+df = pd.DataFrame(df_array)
+df.rename(columns={0: "event"}, inplace=True)
 
 # Save the Pandas DataFrame as a CSV file
-df.to_csv('dna_mhe.csv', index=False)
+df.to_csv('naive.csv', index=False)
 

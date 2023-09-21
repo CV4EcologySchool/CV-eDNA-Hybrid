@@ -12,9 +12,9 @@ import json
 import os
 
 # Sample data
-with open(r"C:\Users\jarre\ownCloud\CV-eDNA\splits\LKTL-37141\image_multilab.json") as json_file:
+with open(r"C:\Carabid_Data\CV-eDNA\splits\LKTL-37141\image_multilab.json") as json_file:
     image_multilab = json.load(json_file)
-with open(r"C:\Users\jarre\ownCloud\CV-eDNA\splits\LKTL-37141\dna_multilab.json") as json_file:
+with open(r"C:\Carabid_Data\CV-eDNA\splits\LKTL-37141\dna_multilab.json") as json_file:
     dna_multilab = json.load(json_file)
 
 ground_truth = [value for value in image_multilab.values()]

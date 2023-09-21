@@ -6,6 +6,8 @@ Created on Fri Aug 18 10:37:09 2023
 """
 
 import os
+os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier")
+
 import yaml
 import copy
 import argparse
@@ -21,6 +23,7 @@ import plotly.graph_objects as go
 from train import create_dataloader, load_model       # NOTE: since we're using these functions across files, it could make sense to put them in e.g. a "util.py" script.
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
+from dataset import CTDataset # Leave this, it helps for some reason
 
 
 def predict(cfg, dataLoader, model):
@@ -341,7 +344,7 @@ def main():
         data_root,
         'eval',
         f'{args.exp}/metrics')
-    os.makedirs(met_path)
+    os.makedirs(met_path, exist_ok=True)
     report_path = os.path.join(
         met_path,
         'eval.yaml')
@@ -359,7 +362,7 @@ def main():
         data_root,
         'eval',
         f'{args.exp}/plots') 
-    os.mkdir(conf_path)
+    os.makedirs(conf_path, exist_ok=True)
     for level in conf_tab:
         conf_matrix = confusion_matrix(named_true_long[level],
                               named_pred_long[level],

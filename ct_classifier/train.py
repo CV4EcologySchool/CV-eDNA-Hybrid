@@ -56,9 +56,11 @@ def load_model(cfg):
 
     # load latest model state
     model_states = glob.glob('model_states/*.pt')
+    model_states = [os.path.normpath(path) for path in model_states]
+    
     if len(model_states):
         # at least one save state found; get latest
-        model_epochs = [int(m.replace('model_states/','').replace('.pt','')) for m in model_states]
+        model_epochs = [int(os.path.basename(m).replace('.pt','')) for m in model_states]
         start_epoch = max(model_epochs)
 
         # load state dict and apply weights to model
@@ -234,7 +236,7 @@ def main():
     # Argument parser for command-line arguments:
     # python ct_classifier/train.py --config configs/exp_resnet18.yaml
     parser = argparse.ArgumentParser(description='Train deep learning model.')
-    parser.add_argument('--config', help='Path to config file', default='../configs/exp_resnet18.yaml')
+    parser.add_argument('--config', help='Path to config file', default='../configs/exp_resnet18_37141.yaml')
     args = parser.parse_args()
 
     # load config

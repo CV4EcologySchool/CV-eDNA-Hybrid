@@ -59,9 +59,11 @@ def load_model(cfg):
 
     # load latest model state
     model_states = glob.glob('model_states/*.pt')
+    model_states = [os.path.normpath(path) for path in model_states]
+    
     if len(model_states):
         # at least one save state found; get latest
-        model_epochs = [int(m.replace('model_states/','').replace('.pt','')) for m in model_states]
+        model_epochs = [int(os.path.basename(m).replace('.pt','')) for m in model_states]
         start_epoch = max(model_epochs)
 
         # load state dict and apply weights to model
@@ -237,7 +239,7 @@ def main():
     # Argument parser for command-line arguments:
     # python ct_classifier/train.py --config configs/exp_resnet18.yaml
     parser = argparse.ArgumentParser(description='Train deep learning model.')
-    parser.add_argument('--config', help='Path to config file', default='../configs/exp_resnet18.yaml')
+    parser.add_argument('--config', help='Path to config file', default='../configs/exp_resnet18_37141_concat.yaml')
     args = parser.parse_args()
 
     # load config
@@ -265,6 +267,9 @@ def main():
 
     # we have everything now: data loaders, model, optimizer; let's do the epochs!
     numEpochs = cfg['num_epochs']
+    best_val_loss = float('inf')
+    patience = 10
+    num_epochs_without_improvement = 0
     while current_epoch < numEpochs:
         current_epoch += 1
         print(f'Epoch {current_epoch}/{numEpochs}')
@@ -272,14 +277,26 @@ def main():
         loss_train, oa_train = train(cfg, dl_train, model, optim)
         loss_val, oa_val = validate(cfg, dl_val, model)
 
-        # combine stats and save
-        stats = {
-            'loss_train': loss_train,
-            'loss_val': loss_val,
-            'oa_train': oa_train,
-            'oa_val': oa_val
-        }
-        save_model(cfg, current_epoch, model, stats)
+        # Check if validation loss has improved
+        if loss_val < best_val_loss:
+            best_val_loss = loss_val
+            num_epochs_without_improvement = 0
+    
+            # Save the model since it's an improvement
+            stats = {
+                'loss_train': loss_train,
+                'loss_val': loss_val,
+                'oa_train': oa_train,
+                'oa_val': oa_val
+            }
+            save_model(cfg, current_epoch, model, stats)
+        else:
+            num_epochs_without_improvement += 1
+    
+        # Check for early stopping
+        if num_epochs_without_improvement >= patience:
+            print(f'Validation loss has not improved for {patience} epochs. Early stopping.')
+            break
     
 
     # That's all, folks!
