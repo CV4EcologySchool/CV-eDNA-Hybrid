@@ -10,6 +10,8 @@ num_workers: 4
 # dataset parameters
 data_root: C:/Carabid_Data/CV-eDNA
 annotate_root: splits/LKTL-37141
+train_name: train
+val_name: valid
 class_labels: LKTL_Long
 short_labels: LKTL
 file_name: Label

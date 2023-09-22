@@ -30,11 +30,13 @@ class CTDataset(Dataset):
             ToTensor()                          # ...and convert them to torch.Tensor.
         ])
         
+        train_name = cfg["train_name"]
+        val_name = cfg["val_name"]
         # load annotation file
         annoPath = os.path.join(
             self.data_root,
             cfg["annotate_root"],
-            'train.csv' if self.split=='train' else 'valid.csv'
+            f'{train_name}.csv' if self.split=='train' else f'{val_name}.csv'
         )
         trainPath = os.path.join(
             os.path.dirname(annoPath),
