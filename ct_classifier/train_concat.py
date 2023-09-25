@@ -7,6 +7,7 @@ Created on Thu Aug 31 10:25:54 2023
 
 
 import os
+os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier")
 import argparse
 import yaml
 import glob
