@@ -59,20 +59,14 @@ class ConcatenateModel(nn.Module):
         super(ConcatenateModel, self).__init__()
         self.tabular_model = tabular_model
         self.resnet_model = resnet_model
-        self.fc = nn.Sequential(
-            nn.Linear(tabular_model.fc[0].out_features + resnet_model.in_features, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(128, num_classes),
-        )
+        self.classifier = nn.Linear(tabular_model.fc[0].out_features + resnet_model.in_features, num_classes)
         
     def forward(self, x_tabular, x_images):
-        x_tabular = self.tabular_model(x_tabular)
-        x_images = self.resnet_model(x_images)
-        x_combined = torch.cat((x_tabular, x_images), dim=1)
-        x_combined = self.fc(x_combined)
-        return x_combined
+        tab_out = self.tabular_model(x_tabular)
+        resnet_out = self.resnet_model(x_images)
+        x_combined = torch.cat((tab_out, resnet_out), dim=1)
+        output = self.classifier(x_combined)
+        return output
 
 
 
