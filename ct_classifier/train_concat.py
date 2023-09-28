@@ -262,6 +262,12 @@ def main():
 
     # initialize model
     model, current_epoch = load_model(cfg)
+    
+    for name, param in model.named_parameters():
+        if param.requires_grad:
+            print(f"Trainable: {name}")
+        else:
+            print(f"Not Trainable: {name}")
 
     # set up model optimizer
     optim = setup_optimizer(cfg, model)
