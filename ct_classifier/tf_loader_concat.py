@@ -79,7 +79,10 @@ class CTDataset:
         )
 
         # Shuffle and batch the dataset
-        data = data.shuffle(shuffle_buffer_size, seed = seed).batch(batch_size)
+        if self.split == 'train':
+            data = data.shuffle(shuffle_buffer_size, seed = seed)
+            
+        data = data.batch(batch_size)
 
         return data
 
@@ -94,17 +97,9 @@ class CTDataset:
             img_array = img_to_array(img)
             
             img_array = preprocess_input(img_array)
+            
+            if self.split == 'train':
+                img_array = tf.image.random_flip_left_right(img_array)
 
             yield ((X, img_array), label)
 
-# # Initialize the dataset
-# ct_dataset = CTDataset(cfg, split='train')
-
-# # Create a TensorFlow dataset
-# tf_dataset = ct_dataset.create_tf_dataset(batch_size=32, shuffle_buffer_size=1000)
-
-# # Iterate through the TensorFlow dataset
-# for batch in tf_dataset.take(1):
-#     Data, labels = batch
-#     break
-#     # X_batch contains features, image_names contains image filenames, and labels contain labels

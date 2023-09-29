@@ -6,6 +6,7 @@ Created on Thu Sep 28 12:36:48 2023
 """
 
 from tensorflow.keras.layers import Dense, BatchNormalization, GlobalAveragePooling2D, Dropout, Activation
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import concatenate
@@ -20,7 +21,7 @@ os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier")
 import argparse
 import yaml
 from util_tf import init_seed
-from TF_Loader import CTDataset
+from tf_loader_concat import CTDataset
 
 
 
@@ -43,7 +44,7 @@ valid_loader = CTDataset(cfg, split='valid')
 
 # Create a TensorFlow dataset
 train_data = train_loader.create_tf_dataset(batch_size= batch_size, shuffle_buffer_size=1000, seed = seed)
-valid_data = valid_loader.create_tf_dataset(batch_size= batch_size, shuffle_buffer_size=1000, seed = seed)
+valid_data = valid_loader.create_tf_dataset(batch_size= batch_size, seed = seed)
 
 ncol = cfg["num_col"]
 num_class = cfg["num_classes"]
@@ -81,18 +82,11 @@ model = Model(inputs = [ann.input, resnet.input], outputs = combined)
     
 model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
+early_stopping = EarlyStopping(monitor='val_loss', patience=10)
+checkpoint = ModelCheckpoint('concat.h5', monitor='val_loss', save_best_only=True)
+
 model.fit(train_data,
-    epochs=10, 
+    epochs=100, 
     verbose = 1,
-    validation_data = valid_data)
-
-validdf = pd.read_csv("shufflevalidlitl.csv")
-validX = validdf.drop(["AllTaxa"], axis = 1)
-validY = validdf["AllTaxa"]
-encoder = LabelEncoder()
-encoder.fit(validY)
-encoded_validY = encoder.transform(validY)
-# convert integers to dummy variables (i.e. one hot encoded)
-dummy_validY = np_utils.to_categorical(encoded_validY)
-
-preds = model.predict([validX, validimages])
+    validation_data = valid_data,
+    callbacks = [early_stopping, checkpoint])
