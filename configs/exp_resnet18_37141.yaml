@@ -2,6 +2,8 @@
 # You can also create lists and group parameters together into nested sub-parts.
 # In Python, this is all read as a dict.
 
+experiment_name: image-only
+
 # environment/computational parameters
 seed: 32678456782       # random number generator seed (long integer value)
 device: cuda
