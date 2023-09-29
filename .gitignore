@@ -2,6 +2,8 @@ datasets
 model_states
 local
 
+*.h5
+
 __pycache__
 *.pyc
 
