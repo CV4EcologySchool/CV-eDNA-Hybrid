@@ -9,10 +9,10 @@ import tensorflow as tf
 import os
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
+#from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.applications.resnet50 import preprocess_input
 from tensorflow.data import Dataset
-from keras.utils import np_utils
+from tensorflow.keras.utils import to_categorical
 
 class CTDataset:
 
@@ -23,8 +23,14 @@ class CTDataset:
         '''
         # Where 
         self.data_root = cfg['data_root']
+        self.num_class = cfg['num_classes']
+        self.img_size = cfg['image_size']
+        self.batch_size = cfg['batch_size']
+        self.seed = cfg['seed']
+        
+        self.num_col = cfg['num_col']
+        
         self.split = split
-        self.cfg = cfg
         
         train_name = cfg["train_name"]
         val_name = cfg["val_name"]
@@ -56,17 +62,18 @@ class CTDataset:
         
         Y = meta[class_labels]
         label_index = encoder.transform(Y)
-        encoded_Y = np_utils.to_categorical(label_index)
+        encoded_Y = to_categorical(label_index)
         
         file_name = cfg['file_name']
         img_file_names = meta[file_name].tolist()
         
         self.data = list(zip(X, img_file_names, encoded_Y))
 
-    def create_tf_dataset(self, batch_size=32, shuffle_buffer_size=1000, seed = 123):
+    def create_tf_dataset(self):
         '''
             Create a TensorFlow dataset.
         '''
+        
         data = Dataset.from_generator(
             self.generator,
             output_signature=(
@@ -74,16 +81,30 @@ class CTDataset:
                     tf.TensorSpec(shape=(None,), dtype=tf.float32),
                     tf.TensorSpec(shape=(None, None, None), dtype=tf.float32),
                 ),
-                tf.TensorSpec(shape=(self.cfg['num_classes']), dtype=tf.float32),
+                tf.TensorSpec(shape=(None,), dtype=tf.float32),
             )
         )
 
         # Shuffle and batch the dataset
         if self.split == 'train':
-            data = data.shuffle(shuffle_buffer_size, seed = seed)
-            
-        data = data.batch(batch_size)
+            data = data.shuffle(buffer_size = 1000, seed = self.seed)
+            data = data.map(
+                self.data_augmentation,
+                num_parallel_calls=tf.data.experimental.AUTOTUNE
+                )
+        
+        # Preprocess images and labels
+        data = data.map(
+            lambda Data, labels: (self.preprocess_fn(Data), labels),
+            num_parallel_calls=tf.data.experimental.AUTOTUNE
+        )
 
+        # Batch data
+        data = data.batch(self.batch_size)
+        
+        # Prefetch data to the GPU (assuming you have GPU support)
+        data = data.apply(tf.data.experimental.prefetch_to_device("/gpu:0"))
+        
         return data
 
     def generator(self):
@@ -93,13 +114,23 @@ class CTDataset:
         for X, image_name, label in self.data:
             # Load image
             image_path = os.path.join(self.data_root, 'AllPhotosJPG', image_name)
-            img = load_img(image_path, target_size=self.cfg['image_size'])
-            img_array = img_to_array(img)
-            
-            img_array = preprocess_input(img_array)
-            
-            if self.split == 'train':
-                img_array = tf.image.random_flip_left_right(img_array)
+            img = tf.io.read_file(image_path)
+            img = tf.image.decode_image(img, channels=3)  # Assuming RGB images
+            img = tf.image.resize(img, self.img_size)
+            img = tf.image.convert_image_dtype(img, tf.float32)  # Convert to float32
 
-            yield ((X, img_array), label)
+            yield ((X, img), label)
+    
+    def data_augmentation(self, Data, label):
+        """
+            Apply data augmentation (randomly flip left-right) to the image.
+        """
+        X, img = Data
+        img = tf.image.random_flip_left_right(img)
+        return (X, img), label
+    
+    def preprocess_fn(self, Data):
+        X, img = Data
+        img = preprocess_input(img)  # Apply preprocessing to img
+        return (X, img)  # Return the updated structure
 
