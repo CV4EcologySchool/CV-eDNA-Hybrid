@@ -56,14 +56,6 @@ valid_data = valid_loader.create_tf_dataset()
 base_model = ResNet50(include_top = False, weights = 'imagenet')
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
-x = Dense(1024)(x)
-x = BatchNormalization()(x)
-x = Activation('relu')(x)
-x = Dropout(0.3)(x)
-x = Dense(128)(x)
-x = BatchNormalization()(x)
-x = Activation('relu')(x)
-x = Dropout(0.3)(x)
 x = Dense(128)(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
@@ -76,7 +68,7 @@ for layer in base_model.layers:
       
 model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=3)
+early_stopping = EarlyStopping(monitor='val_loss', patience=10)
 checkpoint = ModelCheckpoint('image-only.h5', monitor='val_loss', save_best_only=True)
 
 epochs = cfg['num_epochs']
