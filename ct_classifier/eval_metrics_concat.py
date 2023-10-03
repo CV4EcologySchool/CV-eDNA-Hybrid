@@ -21,10 +21,10 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import seaborn as sns
 import plotly.graph_objects as go
-from train import create_dataloader, load_model       # NOTE: since we're using these functions across files, it could make sense to put them in e.g. a "util.py" script.
+from train_concat import create_dataloader, load_model       # NOTE: since we're using these functions across files, it could make sense to put them in e.g. a "util.py" script.
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
-from dataset import CTDataset # Leave this, it helps for some reason
+from dataset_concat import CTDataset # Leave this, it helps for some reason
 
 
 def predict(cfg, dataLoader, model):
@@ -49,13 +49,13 @@ def predict(cfg, dataLoader, model):
     all_true = []
     
     with torch.no_grad():               # don't calculate intermediate gradient steps: we don't need them, so this saves memory and is faster
-        for idx, (data, labels) in enumerate(dataLoader):
+        for idx, (tab, imgs, labels) in enumerate(dataLoader):
 
             # put data and labels on device
-            data, labels = data.to(device), labels.to(device)
+            tab, imgs, labels = tab.to(device), imgs.to(device), labels.to(device)
 
             # forward pass
-            prediction = model(data)
+            prediction = model(tab, imgs)
             pred_label = torch.argmax(prediction, dim=1)
             
             all_probs.append(prediction)
@@ -273,7 +273,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Train deep learning model.')
     parser.add_argument('--config', help='Path to config file', default='../configs')
-    parser.add_argument('--exp', help='Experiment name', default='exp_resnet18_37141')
+    parser.add_argument('--exp', help='Experiment name', default='exp_resnet18_37141_concat_ohe')
     args = parser.parse_args()
     
     # load config
