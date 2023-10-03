@@ -10,11 +10,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import concatenate
-from sklearn.preprocessing import LabelEncoder
-from keras.utils import np_utils
 from keras.layers import Input
-import pandas as pd
-import numpy as np
 import os
 os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier")
 
@@ -35,6 +31,9 @@ cfg = yaml.safe_load(open(args.config, 'r'))
 
 seed = cfg["seed"]
 batch_size = cfg["batch_size"]
+ncol = cfg["num_col"]
+num_class = cfg["num_classes"]
+experiment = cfg["experiment_name"]
 
 init_seed(seed)
 
@@ -43,29 +42,21 @@ train_loader = CTDataset(cfg, split='train')
 valid_loader = CTDataset(cfg, split='valid')
 
 # Create a TensorFlow dataset
-train_data = train_loader.create_tf_dataset(batch_size= batch_size, shuffle_buffer_size=1000, seed = seed)
-valid_data = valid_loader.create_tf_dataset(batch_size= batch_size, seed = seed)
-
-ncol = cfg["num_col"]
-num_class = cfg["num_classes"]
+train_data = train_loader.create_tf_dataset()
+valid_data = valid_loader.create_tf_dataset()
 
 # Define simple ANN for tabular data
 inputs = Input(shape = (ncol,))
-annx = Dense(128, activation = 'relu')(inputs)
+annx = Dense(128)(inputs)
+annx = BatchNormalization()(annx)
+annx = Activation('relu')(annx)
+annx = Dropout(0.3)(annx)
 ann = Model(inputs, annx)
 
 # Define ResNet for image data
 base_model = ResNet50(include_top = False, weights = 'imagenet')
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
-x = Dense(1024)(x)
-x = BatchNormalization()(x)
-x = Activation('relu')(x)
-x = Dropout(0.3)(x)
-x = Dense(128)(x)
-x = BatchNormalization()(x)
-x = Activation('relu')(x)
-x = Dropout(0.3)(x)
 resnet = Model(inputs = base_model.input, outputs = x)
 
 for layer in base_model.layers:
@@ -83,10 +74,12 @@ model = Model(inputs = [ann.input, resnet.input], outputs = combined)
 model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
 early_stopping = EarlyStopping(monitor='val_loss', patience=10)
-checkpoint = ModelCheckpoint('concat.h5', monitor='val_loss', save_best_only=True)
+checkpoint = ModelCheckpoint(f'{experiment}.h5', monitor='val_loss', save_best_only=True)
 
-model.fit(train_data,
-    epochs=100, 
-    verbose = 1,
-    validation_data = valid_data,
-    callbacks = [early_stopping, checkpoint])
+epochs = cfg['num_epochs']
+
+history = model.fit(train_data,
+                    epochs = epochs, 
+                    verbose = 1,
+                    validation_data = valid_data,
+                    callbacks = [early_stopping, checkpoint])
