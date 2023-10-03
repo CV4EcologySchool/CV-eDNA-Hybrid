@@ -2,7 +2,7 @@
 # You can also create lists and group parameters together into nested sub-parts.
 # In Python, this is all read as a dict.
 
-experiment_name: image-only
+experiment_name: ohe
 
 # environment/computational parameters
 seed: 32678456782       # random number generator seed (long integer value)
