@@ -3,20 +3,28 @@ library(vegan)
 library(ggplot2)
 library(indicspecies)
 library (sciplot)
+library(dplyr)
 
 ##fixed "april"
 ##fixed group names##
 
-summ.tile <- read.csv("tiledatafull2.csv", header = T)
-str(summ.tile)
+dna_mhe = read.csv("naive.csv")
+image_mhe = read.csv("image_mhe.csv")
+dna_mhe$source = "DNA"
+image_mhe$source = "Morph"
+full_mhe = rbind(image_mhe, dna_mhe)
+full_mhe <- full_mhe %>%
+  select(ncol(full_mhe), everything())
+
+str(full_mhe)
 # make a dataset of just the percent cover of the tiles, no other columns
 ##added in matrix command
-summ.cover <- as.matrix(summ.tile[,5:18])
+full_mhe_mat <- as.matrix(full_mhe[,-c(1,2)])
 # make it a matrix with the data square root transformed
-summ.tile.mat <- sqrt(summ.cover)
+#full_mhe.mat <- sqrt(summ.cover)
 
 # make a dissimilarity matrix using "bray" method
-summ.tile.dist<-vegdist(test, method='jaccard', binary = T)
+full_mhe.dist<-vegdist(full_mhe_mat, method='jaccard', binary = T)
 
 #set seed to randomize 
 set.seed(36) #reproducible results, can be any number
@@ -24,49 +32,58 @@ set.seed(36) #reproducible results, can be any number
 # This is the PerMANOVA code for the analysis
 # use the dissimilarity matrix with the sqrt transformed data and test
 # the percent cover of each category by plot type and in order of date (i.e. does it change over time)
-summ.tile.div<-adonis2(summ.tile.dist~event_names, permutations = 999, method="jaccard")
-summ.tile.div
+full_mhe.div<-adonis2(full_mhe.dist~source, data = full_mhe, permutations = 999, method="jaccard")
+full_mhe.div
 # We have a strong interaction between plot type and date!!!
 # try switching the order of variables and see if the results are different
-summ.tile.div2<-adonis2(summ.tile.dist~date2*plot.type, data=summ.tile, permutations = 999, method="bray", strata="PLOT")
-summ.tile.div2
+# full_mhe.div2<-adonis2(full_mhe.dist~date2*plot.type, data=full_mhe, permutations = 999, method="bray", strata="PLOT")
+# full_mhe.div2
 # results are very similar
 
 # PCA plot 
-summ.dispersion<-betadisper(summ.tile.dist, group=event_names)
-permutest(summ.dispersion)
-plot(summ.dispersion, hull=FALSE, ellipse=TRUE) ##sd ellipse
+full_mhe.dispersion<-betadisper(full_mhe.dist, group=full_mhe$source)
+permutest(full_mhe.dispersion)
+plot(full_mhe.dispersion, hull=FALSE, ellipse=TRUE) ##sd ellipse
 
 ### now nmds ###
 
-summ.tile.MDS<-metaMDS(test, distance="jaccard", k=2, trymax=35, autotransform=TRUE) ##k is the number of dimensions
-summ.tile.MDS # multivariate dispersians are homogenious 
-stressplot(summ.tile.MDS)
+full_mhe.MDS<-metaMDS(full_mhe_mat, distance="jaccard", k=2, trymax=35, autotransform=TRUE) ##k is the number of dimensions
+full_mhe.MDS # multivariate dispersians are homogenious 
+stressplot(full_mhe.MDS)
 
 
 ##ok now follow
 # https://chrischizinski.github.io/rstats/vegan-ggplot2/
   
-data.scores <- as.data.frame(scores(summ.tile.MDS))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
-data.scores$event <- event_names # create a column of site names, from the rownames of data.scores
-data.scores$grp <- summ.tile$plot.type  #  add the grp variable created earlier
+data.scores <- as.data.frame(scores(full_mhe.MDS))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
+#data.scores$site <- rownames(data.scores)# create a column of site names, from the rownames of data.scores
+data.scores$grp <- full_mhe$source  #  add the grp variable created earlier
 head(data.scores)  #look at the data
 
-data.scores$date <- summ.tile$date2
+data.scores$date <- full_mhe$date2
 
 
 
-species.scores <- as.data.frame(scores(summ.tile.MDS, "species"))  #Using the scores function from vegan to extract the species scores and convert to a data.frame
+species.scores <- as.data.frame(scores(full_mhe.MDS, "species"))  #Using the scores function from vegan to extract the species scores and convert to a data.frame
 species.scores$species <- rownames(species.scores)  # create a column of species, from the rownames of species.scores
 head(species.scores)  #look at the data
 
 ggplot() + 
   geom_text(data=species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=data.scores,aes(x=NMDS1,y=NMDS2),size=2) + # add the point markers
+  geom_point(data=data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=2) + # add the point markers
   # geom_text(data=data.scores,aes(x=NMDS1,y=NMDS2,label=site),size=6,vjust=0) +  # add the site labels
-  scale_colour_manual(values=c("cage" = "red", "open" = "green","pc" = "blue")) +
+  scale_colour_manual(values=c("DNA" = "blue", "Morph" = "red")) +
   coord_equal() +
-  theme_bw()
+  theme_bw() 
+  theme(axis.text.x = element_blank(),  # remove x-axis text
+        axis.text.y = element_blank(), # remove y-axis text
+        axis.ticks = element_blank(),  # remove axis ticks
+        axis.title.x = element_text(size=18), # remove x-axis labels
+        axis.title.y = element_text(size=18), # remove y-axis labels
+        panel.background = element_blank(), 
+        panel.grid.major = element_blank(),  #remove major-grid labels
+        panel.grid.minor = element_blank(),  #remove minor-grid labels
+        plot.background = element_blank())
 
 ggplot() + 
   geom_text(data=species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
