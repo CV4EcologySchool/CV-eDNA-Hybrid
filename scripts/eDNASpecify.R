@@ -51,7 +51,10 @@ for(x in 1:nrow(valid)){
   }
 }
 splevels = splevels[agreed]
+mrca_agreed = mrca[agreed]
 splevels = str_to_title(splevels)
+splevels[which(mrca_agreed == "Myriapoda")] = "Class"
+
 
 newclass_agreed = newclass[agreed]
 
@@ -92,6 +95,49 @@ numsplevelsog = as.numeric(ordered(splevelsog, levels = taxaorder))
 
 SpecifyImprove = data.frame(numsplevelsog, numsplevels)
 improve = SpecifyImprove[,1] - SpecifyImprove[,2]
+
+##################
+#### DNA Bias ####
+##################
+
+hier_newclass = as.data.frame(matrix(NA, nrow = length(newclass), ncol = ncol(hierarchy)))
+
+for(i in 1:length(newclass)){
+  hier_newclass[i,] = hierarchy[which(hierarchy$Species == newclass[i]),]
+}
+
+
+ednaindex = list()
+cParent = list()
+mrca = c()
+splevels = c()
+for(x in 1:nrow(valid)){
+  if(agreed[x]){
+    # Get the row indices in ednaclean where the event and LKTL label match the observation
+    ednaindex[[x]] = which(ednaclean$event == valid$Event[x] & ednaclean$LKTL == newclass[x])
+    # Get the taxonomic levels where there is no forking in the edna data (minus NULL or indet. values)
+    cParent[[x]] = which(lengths(apply(ednaclean[ednaindex[[x]], c(1:13)], 2, unique)) == 1
+                         & apply(ednaclean[ednaindex[[x]], c(1:13)], 2, unique) %!in% c("NULL", "indet."))
+    # Get the name of the most specific group in CParent that doesn't have forking
+    mrca[x] = ednaclean[ednaindex[[x]][1], names(cParent[[x]])[length(cParent[[x]])]]
+    # Get the specificity of mrca
+    splevels[x] = names(cParent[[x]])[length(cParent[[x]])]
+  }
+  else{
+    ednaindex[[x]] = NA
+    cParent[[x]] = NA
+    mrca[x] = NA
+  }
+}
+splevels = splevels[agreed]
+splevels = str_to_title(splevels)
+
+
+
+
+
+
+
 
 
 
