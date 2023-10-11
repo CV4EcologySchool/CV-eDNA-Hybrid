@@ -26,6 +26,9 @@ missingml = mllevels[which(!mlin)]
 ednamatch = edna[-which(edna$event %in% missingedna),]
 invertmatch = invert[-which(invert$Event %in% missingml),]
 
+ednamatch$percent_sim = as.numeric(ednamatch$percent_sim)
+ednamatch = ednamatch[-which(ednamatch$percent_sim > 0 & ednamatch$percent_sim < 97),]
+ednamatch = ednamatch[-which(ednamatch$det_level == "phylum"),]
 
 mlinlevels = mllevels[which(mlin)]
 
