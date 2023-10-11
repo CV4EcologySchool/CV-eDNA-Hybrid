@@ -27,12 +27,14 @@ from tf_loader import CTDataset
 
 parser = argparse.ArgumentParser(description='Train deep learning model.')
 parser.add_argument('--config', help='Path to config file', default='../configs/exp_resnet18_37141.yaml')
+parser.add_argument('--seed', help='Seed index', default = 0)
 args = parser.parse_args()
 
 # load config
 print(f'Using config "{args.config}"')
 cfg = yaml.safe_load(open(args.config, 'r'))
 
+cfg["seed"] = cfg["seed"][args.seed]
 seed = cfg["seed"]
 batch_size = cfg["batch_size"]
 num_class = cfg["num_classes"]
