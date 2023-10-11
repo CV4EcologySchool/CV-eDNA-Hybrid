@@ -44,5 +44,5 @@ df = pd.DataFrame(df_array)
 df.rename(columns={0: "event"}, inplace=True)
 
 # Save the Pandas DataFrame as a CSV file
-df.to_csv('naive.csv', index=False)
+df.to_csv('dna_mhe.csv', index=False)
 
