@@ -5,7 +5,7 @@
 experiment_name: concat_image
 
 # environment/computational parameters
-seed: 32678456782       # random number generator seed (long integer value)
+seed: [7028124, 35927022, 11701998, 54659065, 35776248]
 device: cuda
 num_workers: 4
 
