@@ -160,7 +160,7 @@ def main():
     parser = argparse.ArgumentParser(description='Train deep learning model.')
     parser.add_argument('--config', help='Path to config file', default='../configs')
     parser.add_argument('--exp', help='Experiment name', default='exp_resnet18_37141')
-    parser.add_argument('--mask', help='Experiment name', default='naive')
+    parser.add_argument('--mask', help='Mask name', default='weighted')
     args = parser.parse_args()
     
     # load config
