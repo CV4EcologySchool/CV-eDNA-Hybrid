@@ -26,141 +26,13 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
 from tf_loader import CTDataset   # Leave this, it helps for some reason
-
-def hierarchy(Y_ordered):
-    hierarchy_long = {"Phylum": Y_ordered.copy(),
-                      "Class": Y_ordered.copy(),
-                      "Order": Y_ordered.copy(),
-                      "Family": Y_ordered.copy(),
-                      "Genus": Y_ordered.copy(),
-                      "Species": Y_ordered.copy()}
-    
-    i = 1
-    for level in hierarchy_long:
-        for j in range(len(hierarchy_long[level])):
-            input_string = hierarchy_long[level][j]
-            parts = input_string.split("_")
-            hierarchy_long[level][j] = "_".join(parts[:i])
-        i += 1
-    
-    hierarchy_short = copy.deepcopy(hierarchy_long)
-    for level in hierarchy_short:
-        for j in range(len(hierarchy_short[level])):
-            input_string = hierarchy_short[level][j]
-            parts = input_string.split("_")
-            hierarchy_short[level][j] = parts[-1]
-    
-    return hierarchy_long, hierarchy_short 
-
-def hierarchy_pred(y, hierarchy_long, hierarchy_short):
-   
-
-    named_long = {"Phylum": y.copy(),
-                  "Class": y.copy(),
-                  "Order": y.copy(),
-                  "Family": y.copy(),
-                  "Genus": y.copy(),
-                  "Species": y.copy()}
-    
-    named_short = copy.deepcopy(named_long)
-    
-    for level in hierarchy_long:
-        named_long[level] = [hierarchy_long[level][index] for index in y]
-        named_short[level] = [hierarchy_short[level][index] for index in y]
-    
-    return named_long, named_short
-
-def conf_table(conf_matrix, Y, prop = True):
-    """
-    Creates a confusion matrix as a pandas data frame pivot table
-
-    Parameters:
-    - conf_matrix (Array): The standard confusion matrix output from sklearn
-    - Y (list): The unique labels of the classifier (i.e. the classes of the output layer). Will be used as conf_table labels
-    - prop (bool): Should the conf table use proportions (i.e. Recall) or total values?
-
-    Returns:
-    DataFrame: conf_table
-    """
-    
-    # Convert conf_matrix to list
-    conf_data = []
-    for i, row in enumerate(conf_matrix):
-        for j, count in enumerate(row):
-            conf_data.append([Y[i], Y[j], count])
-    
-    # Convert list to 
-    conf_df = pd.DataFrame(conf_data, columns=['Reference', 'Prediction', 'Count'])
-    
-    # If prop = True, calculate proportions
-    if prop:
-        conf_df['prop'] = conf_df['Count'] / (conf_df.groupby('Reference')['Count'].transform('sum') + 0.1)
-        
-        # Create conf_table
-        conf_table = conf_df.pivot_table(index='Reference', columns='Prediction', values='prop', fill_value=0)
-        
-    else:
-        # Create conf_table
-        conf_table = conf_df.pivot_table(index='Reference', columns='Prediction', values='Count', fill_value=0)
-    
-    
-    return conf_table
-
-def plt_conf(table, Y, report, level = "species"):
-    """
-    Plots a confusion matrix
-
-    Parameters:
-    - table (DataFrame): The conf_table
-    - Y (list): The class labels to be plotted on the conf_tab
-    - report (dict): From sklearn.metrics.classification_report
-
-    Returns:
-    Saves plot to directory
-    """
-      
-    accuracy = round(report["accuracy"], 3)
-    recall = round(report["macro avg"]["recall"], 3)
-    n = len(Y)
-    
-    custom_gradient = ["#201547", "#00BCE1"]
-    n_bins = 100  # Number of bins for the gradient
-
-    custom_cmap = LinearSegmentedColormap.from_list("CustomColormap", custom_gradient, N=n_bins)
-
-    plt.figure(figsize=(16, 12))
-    sns.set(font_scale=1)
-    sns.set_style("white")
-    
-    ax = sns.heatmap(table, cmap=custom_cmap, cbar_kws={'label': 'Proportion'})
-    
-    ax.set_title(f"Level = {level} ; Accuracy = {accuracy} ; Recall = {recall}; n = {n}", fontsize=24)
-    # Customize the axis labels and ticks
-    ax.set_xlabel("Predicted", fontsize=20)
-    ax.set_ylabel("Actual", fontsize=20)
-    ax.set_xticks(np.arange(len(Y)) + 0.5)
-    ax.set_yticks(np.arange(len(Y)) + 0.5)
-    ax.set_xticklabels(Y, fontsize=12)
-    ax.set_yticklabels(Y, rotation=0, fontsize=12)
-    
-    # Add annotation
-    ax.annotate("Predicted", xy=(0.5, -0.2), xytext=(0.5, -0.5), ha='center', va='center',
-                 textcoords='axes fraction', arrowprops=dict(arrowstyle="-", lw=1))
-    
-    
-    # Customize the appearance directly on the Axes object
-    ax.set_xticklabels(Y, rotation=45, ha='right')
-    
-    return plt.gcf(), n
-
-
-
+from util_tf import hierarchy, hierarchy_pred, conf_table, plt_conf
 
 def main():
     parser = argparse.ArgumentParser(description='Train deep learning model.')
     parser.add_argument('--config', help='Path to config file', default='../configs')
     parser.add_argument('--exp', help='Experiment name', default='exp_resnet18_37141')
-    parser.add_argument('--mask', help='Mask name', default='weighted')
+    parser.add_argument('--mask', help='Experiment name', default='naive')
     args = parser.parse_args()
     
     # load config
@@ -172,18 +44,12 @@ def main():
         
     experiment = cfg['experiment_name']
     data_root = cfg['data_root']
+    seed = cfg['seed']
     
     # setup entities
     test_loader = CTDataset(cfg, split='valid')   
     test_generator = test_loader.create_tf_dataset()
-    
-    # load model
-    model = tf.keras.models.load_model(f'{experiment}.h5')
-    
-    probs = model.predict(test_generator)
-    predicted_classes = tf.argmax(probs, axis=1)
-    predicted_classes = predicted_classes.numpy()
-    
+     
     # load annotation file
     annoPath = os.path.join(
         data_root,
@@ -224,7 +90,10 @@ def main():
     all_true = tf.argmax(all_true, axis=1)
     all_true = all_true.numpy()
     
+    hierarchy_long, hierarchy_short = hierarchy(Y_ordered)
+    named_true_long, named_true_short = hierarchy_pred(all_true, hierarchy_long, hierarchy_short)
     
+   
     '''
     Mask code begins
     '''
@@ -271,46 +140,81 @@ def main():
             else:
                 filtered_mhe_dict[key][j] = 1 - dna_pr[Y_ordered[j]]['recall']
     
-    # Create a new matrix to store the results
-    result_matrix = np.zeros_like(probs)
-    
-    # Iterate through the keys in 'mhe'
-    for key, value_list in filtered_mhe_dict.items():
-        # Find the index for the current category
-        idx = event_indices[key]
-        
-        # Multiply the corresponding rows by the value list
-        result_matrix[idx, :] = probs[idx, :] * value_list
-    
-    masked_preds = np.argmax(result_matrix, axis = 1)
     '''
     Mask code ends
     '''
 
-    hierarchy_long, hierarchy_short = hierarchy(Y_ordered)
-    
-    named_true_long, named_true_short = hierarchy_pred(all_true, hierarchy_long, hierarchy_short)
-    named_pred_long, named_pred_short = hierarchy_pred(masked_preds, hierarchy_long, hierarchy_short)
-    
-    
-    report = {"Phylum": {},
+    report_structure = {"Phylum": {},
                   "Class": {},
                   "Order": {},
                   "Family": {},
                   "Genus": {},
                   "Species": {}}
     
-    for level in report:
-        report[level] = classification_report(named_true_short[level],
-                              named_pred_short[level],
-                              output_dict=True,
-                              zero_division=1)
+    report = [report_structure.copy() for _ in range(5)]
+    average_recall = [report_structure.copy() for _ in range(5)]
 
+    probs = list(range(5))
+    t3_acc = list(range(5))
+    predicted_classes = list(range(5))
+    result_matrix = list(range(5))
+    masked_preds = list(range(5))
+    masked_pred_ohe = list(range(5))
+    named_pred_long = list(range(5))
+    named_pred_short = list(range(5))
+    
+    for i in range(len(cfg['seed'])):
+        # load model
+        model = tf.keras.models.load_model(f'{experiment}_{seed[i]}.h5')
+        
+        probs[i] = model.predict(test_generator)
+        predicted_classes[i] = tf.argmax(probs[i], axis=1)
+        predicted_classes[i] = predicted_classes[i].numpy()
+        
+        result_matrix[i] = np.zeros_like(probs[i])
+        masked_pred_ohe[i] = np.zeros_like(probs[i])
+        
+        # Iterate through the keys in 'mhe'
+        for key, value_list in filtered_mhe_dict.items():
+            # Find the index for the current category
+            idx = event_indices[key]
+            # Multiply the corresponding rows by the value list
+            probs[i][idx, :] = probs[i][idx, :] * value_list
+            # Assign it to a new matrix
+            result_matrix[i][idx, :] = probs[i][idx, :]
+        
+        masked_preds[i] = np.argmax(result_matrix[i], axis = 1)
+        masked_pred_ohe[i][np.arange(len(result_matrix[i])), masked_preds[i]] = 1
+        
+        top3_indices = np.argsort(probs[i], axis=1)[:, -3:]
+        t3_class = np.any(top3_indices == all_true[:, np.newaxis], axis=1)
+        t3_acc[i] = np.mean(t3_class)
+        
+        named_pred_long[i], named_pred_short[i] = hierarchy_pred(masked_preds[i], hierarchy_long, hierarchy_short)
+        
+        for level in report[i]:
+            report[i][level] = classification_report(named_true_short[level],
+                                  named_pred_short[i][level],
+                                  output_dict=True,
+                                  zero_division=1)
+            recall_values = [report[i][level][key]['recall'] for key in set(named_true_short[level])]
+            average_recall[i][level] = sum(recall_values) / len(recall_values)
+
+    
+    accuracy_values = [d["Species"]['accuracy'] for d in report]
+    recall = [average_recall[i]["Species"] for i in range(5)]
+    np.mean(accuracy_values)
+    np.std(accuracy_values)
+    np.mean(recall)
+    np.std(recall)
+    np.mean(t3_acc)
+    np.std(t3_acc)
+    
     # Mask specific path
     met_path = os.path.join(
         data_root,
         'eval',
-        f'{args.exp}_{args.mask}/metrics')
+        f'{args.exp}_weighted/metrics')
     os.makedirs(met_path, exist_ok=True)
     report_path = os.path.join(
         met_path,
@@ -328,18 +232,25 @@ def main():
     conf_path = os.path.join(
         data_root,
         'eval',
-        f'{args.exp}_{args.mask}/plots')
+        f'{args.exp}_weighted/plots')
     os.makedirs(conf_path, exist_ok=True)
     for level in conf_tab:
-        conf_matrix = confusion_matrix(named_true_long[level],
-                              named_pred_long[level],
+        pred_long = []
+        for i in named_pred_long:
+            pred_long.extend(i[level])
+        conf_matrix = confusion_matrix(named_true_long[level]*5,
+                              pred_long,
                               labels = sorted(list(set(hierarchy_long[level]))))
         long = pd.Series(hierarchy_long[level])
         long = long.unique()
         conf_tab[level] = conf_table(conf_matrix, long)
         short = pd.Series(hierarchy_short[level])
         short = short.unique()
-        figure, n = plt_conf(conf_tab[level], short, report[level], level)
+        avg_report = classification_report(named_true_long[level]*5,
+                              pred_long,
+                              output_dict=True,
+                              zero_division=1)        
+        figure, n = plt_conf(conf_tab[level], short, avg_report, level)
         # Save the plot
         fig_path = os.path.join(
             conf_path,
