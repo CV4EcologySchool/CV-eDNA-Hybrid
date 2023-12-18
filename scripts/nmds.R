@@ -4,320 +4,270 @@ library(ggplot2)
 library(indicspecies)
 library (sciplot)
 library(dplyr)
+library(lubridate)
+library(tidyr)
+
+setwd("C:/Carabid_Data/CV-eDNA/splits/LKTL-37141")
 
 ##fixed "april"
 ##fixed group names##
 
-dna_mhe = read.csv("naive.csv")
-image_mhe = read.csv("image_mhe.csv")
-dna_mhe$source = "DNA"
-image_mhe$source = "Morph"
-full_mhe = rbind(image_mhe, dna_mhe)
-full_mhe <- full_mhe %>%
-  select(ncol(full_mhe), everything())
+# dna_mhe = read.csv("naive.csv")
+# image_mhe = read.csv("image_mhe.csv")
+# colnames(dna_mhe)[1] = "event"
+# colnames(image_mhe) = colnames(dna_mhe)
+# dna_mhe$source = "DNA"
+# image_mhe$source = "Morph"
+# full_mhe = rbind(image_mhe, dna_mhe)
+# full_mhe <- full_mhe %>%
+#   select(ncol(full_mhe), everything())
+
+ydays = as.character(as.Date(substr(events, 
+                                            nchar(events) - 7, 
+                                            nchar(events)),
+                                     format = "%Y%m%d"))
+ydays = yday(ydays)
+
+meta <- invert_cleanlab %>%
+  group_by(Event) %>%
+  summarise(lat = mean(decLat), long = mean(decLong), elevM = mean(elevM))
+
+meta$yday = ydays
+meta$habitat = unique(invert_cleanlab[, c("Event", "nlcdClass")])[,2]
+meta$site = substr(meta$Event, 1, 4)
+
+wide_dna <- edna_rmdup %>%
+  group_by(Event, LITL) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = LITL, values_from = count, values_fill = 0)
+
+wide_mike = invert_cleanlab %>%
+  group_by(Event, AllTaxa) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = AllTaxa, values_from = count, values_fill = 0)
+
+wide_mike_LKTL = invert_cleanlab %>%
+  group_by(Event, LKTL) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = LKTL, values_from = count, values_fill = 0)
+
+
+ml_class = data.frame(val_split1$Event, newclass)
+colnames(ml_class) = c("Event", "Class")
+wide_ml = ml_class %>%
+  group_by(Event, Class) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = Class, values_from = count, values_fill = 0)
+
+hybrid_class = data.frame(val_split1$Event, mrca)
+colnames(hybrid_class) = c("Event", "Class")
+wide_hybrid = hybrid_class %>%
+  group_by(Event, Class) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = Class, values_from = count, values_fill = 0)
+
+wide_mike_val = val_split1 %>%
+  group_by(Event, AllTaxa) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = AllTaxa, values_from = count, values_fill = 0)
+
+wide_dna_val = edna_rmdup[which(edna_rmdup$Event %in% wide_ml$Event),] %>%
+  group_by(Event, LITL) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = LITL, values_from = count, values_fill = 0)
+
+wide_mike_val_LKTL = val_split1 %>%
+  group_by(Event, LKTL) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = LKTL, values_from = count, values_fill = 0) 
+
+hybrid_class = data.frame(val_split1$Event, mrca)
+colnames(hybrid_class) = c("Event", "Class")
+wide_mike_val_spec = hybrid_class %>%
+  group_by(Event, Class) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = Class, values_from = count, values_fill = 0)
+
+spatio = read.csv("pred_spatio.csv")
+spatio = spatio[,1]
+spatio_class = data.frame(val_split1$Event, spatio)
+colnames(spatio_class) = c("Event", "Class")
+wide_spatio = spatio_class %>%
+  group_by(Event, Class) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = Class, values_from = count, values_fill = 0)
+
+image_only = read.csv("preds_unimodal.csv")
+image_only = image_only[,1]
+image_class = data.frame(val_split1$Event, image_only)
+colnames(image_class) = c("Event", "Class")
+wide_image = image_class %>%
+  group_by(Event, Class) %>%
+  summarise(count = n()) %>%
+  pivot_wider(names_from = Class, values_from = count, values_fill = 0)
+
+
+# meta
+ml_meta = meta[which(meta$Event %in% wide_ml$Event),]
 
 str(full_mhe)
-# make a dataset of just the percent cover of the tiles, no other columns
-##added in matrix command
-full_mhe_mat <- as.matrix(full_mhe[,-c(1,2)])
-# make it a matrix with the data square root transformed
-#full_mhe.mat <- sqrt(summ.cover)
 
-# make a dissimilarity matrix using "bray" method
-full_mhe.dist<-vegdist(full_mhe_mat, method='jaccard', binary = T)
+nmds_plot = function(mhe, meta, name = "N/A", binary = F){
+  # mhe is one of the wide data frames created above 
+  # make a dataset of just the percent cover of the tiles, no other columns
+  ##added in matrix command
+  mhe_mat <- as.matrix(mhe[,-1])
+
+  #set seed to randomize 
+  set.seed(36) #reproducible results, can be any number
+  
+
+  ### now nmds ###
+  
+  mhe.MDS<-metaMDS(mhe_mat, distance="jaccard", k=2, trymax=35, autotransform=TRUE, binary = binary) ##k is the number of dimensions
+  mhe.MDS # multivariate dispersians are homogenious 
+  stressplot(mhe.MDS, main = name)
+  
+  
+  ##ok now follow
+  # https://chrischizinski.github.io/rstats/vegan-ggplot2/
+    
+  meta = cbind(meta, scores(mhe.MDS, "sites"))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
+  #data.scores$site <- rownames(data.scores)# create a column of site names, from the rownames of data.scores
+  
+  cnames = colnames(meta)
+  
+  meta = within(meta, {
+    lat <- scale(lat)
+    long <- scale(long)
+    elevM <- scale(elevM)
+    yday = scale(yday)
+  })
+  
+  colnames(meta) = cnames
+  
+  model1 = lmer(NMDS1 ~ lat * long + elevM + habitat + (1|site/yday), data = meta)
+  model2 = lmer(NMDS2 ~ lat * long + elevM + habitat + (1|site/yday), data = meta)
+
+  lat1.plot = ggplot() + 
+    geom_point(data=meta,aes(x=lat,y=NMDS1),size=2)
+  
+  lat2.plot = ggplot() + 
+    geom_point(data=meta,aes(x=lat,y=NMDS2),size=2)
+  
+  nmds.plot = ggplot() + 
+    geom_point(data=meta,aes(x=NMDS1,y=NMDS2),size=2)
+
+  return(list(lat1.plot = lat1.plot, 
+              lat2.plot = lat2.plot,
+              nmds.plot = nmds.plot, 
+              model1.sum = summary(model1, correlation = T), 
+              model2.sum = summary(model2, correlation = T),
+              mds = mhe.MDS,
+              data = meta))
+}
+
+rm_row = which(rowSums(wide_dna[,-1]) < 5)
+
+results_dna = nmds_plot(wide_dna[-rm_row,], meta = meta[-rm_row,], binary = T, name = "DNA Full")
+results_mike = nmds_plot(wide_mike[-rm_row,], meta = meta[-rm_row,], name = "Mike Full")
+results_mike_LKTL = nmds_plot(wide_mike_LKTL[-rm_row,], meta = meta[-rm_row,], name = "Mike Full LKTL")
+
+results_mike_val = nmds_plot(wide_mike_val[-2,], meta = ml_meta[-2,], name = "Mike val")
+results_ml = nmds_plot(wide_ml[-2,], meta = ml_meta[-2,], name = "ML")
+results_hybrid = nmds_plot(wide_hybrid[-2,], meta = ml_meta[-2,], name = "ML Specificity Filter")
+results_dna_val = nmds_plot(wide_dna_val[-2,], meta = ml_meta[-2,], binary = T, name = "DNA val")
+results_mike_val_LKTL = nmds_plot(wide_mike_val_LKTL[-2,], meta = ml_meta[-2,], name = "Mike val LKTL")
+results_mike_val_spec = nmds_plot(wide_mike_val_spec[-2,], meta = ml_meta[-2,], name = "Mike val Spec")
+
+results_dna$model1.sum
+results_mike$model1.sum
+results_mike_LKTL$model1.sum
+
+results_dna_val$model1.sum
+results_mike_val$model1.sum
+results_mike_val_LKTL$model1.sum
+results_mike_val_spec$model1.sum
+results_ml$model1.sum
+results_hybrid$model1.sum
+
+
+results_dna$model2.sum
+results_mike$model2.sum
+results_mike_LKTL$model2.sum
+
+results_dna_val$model2.sum
+results_mike_val$model2.sum
+results_mike_val_LKTL$model2.sum
+results_mike_val_spec$model2.sum
+results_ml$model2.sum
+results_hybrid$model2.sum
+
+
+wide_ml$source = "DNA"
+wide_image$source = "Image_Only"
+wide_spatio$source = "Spatiotemporal"
+wide_mike_val_LKTL$source = "Ground_Truth"
+
+
+bruh = rbind(wide_image, wide_ml, wide_spatio, wide_mike_val_LKTL)
+bruh <- bruh %>%
+  select(source, everything()) %>%
+  mutate_all(~ifelse(is.na(.), 0, .))
+
+set.seed(123)
+
+test = pairwise.adonis2(mhe_mat ~ source, method = "bray", data = bruh)
+
+meta = rbind(ml_meta, ml_meta, ml_meta, ml_meta)
+
+
+mhe_mat <- as.matrix(bruh[,-c(1,2)])
 
 #set seed to randomize 
 set.seed(36) #reproducible results, can be any number
 
-# This is the PerMANOVA code for the analysis
-# use the dissimilarity matrix with the sqrt transformed data and test
-# the percent cover of each category by plot type and in order of date (i.e. does it change over time)
-full_mhe.div<-adonis2(full_mhe.dist~source, data = full_mhe, permutations = 999, method="jaccard")
-full_mhe.div
-# We have a strong interaction between plot type and date!!!
-# try switching the order of variables and see if the results are different
-# full_mhe.div2<-adonis2(full_mhe.dist~date2*plot.type, data=full_mhe, permutations = 999, method="bray", strata="PLOT")
-# full_mhe.div2
-# results are very similar
-
-# PCA plot 
-full_mhe.dispersion<-betadisper(full_mhe.dist, group=full_mhe$source)
-permutest(full_mhe.dispersion)
-plot(full_mhe.dispersion, hull=FALSE, ellipse=TRUE) ##sd ellipse
 
 ### now nmds ###
 
-full_mhe.MDS<-metaMDS(full_mhe_mat, distance="jaccard", k=2, trymax=35, autotransform=TRUE) ##k is the number of dimensions
-full_mhe.MDS # multivariate dispersians are homogenious 
-stressplot(full_mhe.MDS)
+mhe.MDS<-metaMDS(mhe_mat, distance="bray", k=2, trymax=35, autotransform=TRUE, binary = binary) ##k is the number of dimensions
+mhe.MDS # multivariate dispersians are homogenious 
+stressplot(mhe.MDS, main = "Bray")
 
 
 ##ok now follow
 # https://chrischizinski.github.io/rstats/vegan-ggplot2/
-  
-data.scores <- as.data.frame(scores(full_mhe.MDS))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
+
+meta = cbind(meta, scores(mhe.MDS, "sites"))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
 #data.scores$site <- rownames(data.scores)# create a column of site names, from the rownames of data.scores
-data.scores$grp <- full_mhe$source  #  add the grp variable created earlier
-head(data.scores)  #look at the data
 
-data.scores$date <- full_mhe$date2
+cnames = colnames(meta)
 
+meta = within(meta, {
+  lat <- scale(lat)
+  long <- scale(long)
+  elevM <- scale(elevM)
+  yday = scale(yday)
+})
 
+colnames(meta) = cnames
 
-species.scores <- as.data.frame(scores(full_mhe.MDS, "species"))  #Using the scores function from vegan to extract the species scores and convert to a data.frame
-species.scores$species <- rownames(species.scores)  # create a column of species, from the rownames of species.scores
-head(species.scores)  #look at the data
+meta$source = bruh$source
+
+model1 = lmer(NMDS1 ~ lat * long + elevM + habitat + (1|site/yday) + source:lat, data = meta)
+model2 = lmer(NMDS2 ~ lat * long + elevM + habitat + (1|site/yday), data = meta)
+
+lat1.plot = ggplot() + 
+  geom_point(data=meta,aes(x=lat,y=NMDS1),size=2)
+
+lat2.plot = ggplot() + 
+  geom_point(data=meta,aes(x=lat,y=NMDS2),size=2)
+
+nmds.plot = ggplot() + 
+  geom_point(data=meta,aes(x=NMDS1,y=NMDS2),size=2)
+
 
 ggplot() + 
-  geom_text(data=species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=2) + # add the point markers
-  # geom_text(data=data.scores,aes(x=NMDS1,y=NMDS2,label=site),size=6,vjust=0) +  # add the site labels
-  scale_colour_manual(values=c("DNA" = "blue", "Morph" = "red")) +
-  coord_equal() +
-  theme_bw() 
-  theme(axis.text.x = element_blank(),  # remove x-axis text
-        axis.text.y = element_blank(), # remove y-axis text
-        axis.ticks = element_blank(),  # remove axis ticks
-        axis.title.x = element_text(size=18), # remove x-axis labels
-        axis.title.y = element_text(size=18), # remove y-axis labels
-        panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank(),  #remove minor-grid labels
-        plot.background = element_blank())
-
-ggplot() + 
-  geom_text(data=species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=2) + # add the point markers
-  geom_text(data=data.scores,aes(x=NMDS1,y=NMDS2,label=site),size=4,vjust=0,hjust=0) +  # add the site labels
-  scale_colour_manual(values=c("cage" = "red", "open" = "green","pc" = "blue")) +
-  coord_equal() +
-  theme_bw() + 
-  theme(axis.text.x = element_blank(),  # remove x-axis text
-        axis.text.y = element_blank(), # remove y-axis text
-        axis.ticks = element_blank(),  # remove axis ticks
-        axis.title.x = element_text(size=18), # remove x-axis labels
-        axis.title.y = element_text(size=18), # remove y-axis labels
-        panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank(),  #remove minor-grid labels
-        plot.background = element_blank())
-
-grp.open <- data.scores[data.scores$grp == "open", ][chull(data.scores[data.scores$grp == 
-                                                                   "open", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
-grp.cage <- data.scores[data.scores$grp == "cage", ][chull(data.scores[data.scores$grp == 
-                                                                   "cage", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
-grp.pc <- data.scores[data.scores$grp == "pc", ][chull(data.scores[data.scores$grp == 
-                                                                         "pc", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
-
-hull.data <- rbind(grp.open, grp.cage,grp.pc)  #combine grp.a and grp.b
-hull.data
-
-ggplot() + 
-  geom_polygon(data=hull.data,aes(x=NMDS1,y=NMDS2,fill=grp,group=grp),alpha=0.30) + # add the convex hulls
-  geom_text(data=species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=4) + # add the point markers
-  scale_colour_manual(values=c("cage" = "red", "open" = "green","pc" = "blue")) +
-  scale_fill_discrete(name="Urchin treatment",
-                      breaks=c("cage", "open", "pc"),
-                      labels=c("excluded","present","partial cage"))+
-  scale_shape_discrete(name="Urchin treatment",
-                      breaks=c("cage", "open", "pc"),
-                      labels=c("excluded","present","partial cage"))+
-  scale_colour_discrete(name="Urchin treatment",
-                      breaks=c("cage", "open", "pc"),
-                      labels=c("excluded","present","partial cage"))+
-  coord_equal() +
-  theme_bw() + 
-  theme(axis.text.x = element_blank(),  # remove x-axis text
-        axis.text.y = element_blank(), # remove y-axis text
-        axis.ticks = element_blank(),  # remove axis ticks
-        axis.title.x = element_text(size=18), # remove x-axis labels
-        axis.title.y = element_text(size=18), # remove y-axis labels
-        panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank(),  #remove minor-grid labels
-        plot.background = element_blank())+
-  theme(legend.text = element_text(size = 12))+
-  theme(legend.title = element_text(size = 14))
-
-p1 <- ggplot() + 
-  geom_polygon(data=hull.data,aes(x=NMDS1,y=NMDS2,fill=grp,group=grp),alpha=0.30) + # add the convex hulls
-  geom_text(data=species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=4) + # add the point markers
-  scale_colour_manual(values=c("cage" = "red", "open" = "green","pc" = "blue")) +
-  scale_fill_discrete(name="Urchin treatment",
-                      breaks=c("cage", "open", "pc"),
-                      labels=c("excluded","present","partial cage"))+
-  scale_shape_discrete(name="Urchin treatment",
-                       breaks=c("cage", "open", "pc"),
-                       labels=c("excluded","present","partial cage"))+
-  scale_colour_discrete(name="Urchin treatment",
-                        breaks=c("cage", "open", "pc"),
-                        labels=c("excluded","present","partial cage"))+
-  coord_equal() +
-  theme_bw() + 
-  theme(axis.text.x = element_blank(),  # remove x-axis text
-        axis.text.y = element_blank(), # remove y-axis text
-        axis.ticks = element_blank(),  # remove axis ticks
-        axis.title.x = element_text(size=18), # remove x-axis labels
-        axis.title.y = element_text(size=18), # remove y-axis labels
-        panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank(),  #remove minor-grid labels
-        plot.background = element_blank())+
-  theme(legend.text = element_text(size = 12))+
-  theme(legend.title = element_text(size = 14))
-
-  
-
-######################################################################################
-###                           WINTER NMDS PLOT                                     ###
-######################################################################################
-
-win.tile <- read.csv("win.tile.all.items.without.plot1.csv", header = T)
-str(win.tile)
-
-# make a dataset of just the percent cover of the tiles, no other columns
-##added in matrix command
-win.cover <- as.matrix(win.tile[,5:18])
-# make it a matrix with the data square root transformed
-win.tile.mat <- sqrt(win.cover)
-
-# make a dissimilarity matrix using "bray" method
-win.tile.dist<-vegdist(win.tile.mat, method='bray')
-
-#set seed to randomize 
-set.seed(36) #reproducible results, can be any number
-
-# This is the PerMANOVA code for the analysis
-# use the dissimilarity matrix with the sqrt transformed data and test
-# the percent cover of each category by plot type and in order of date (i.e. does it change over time)
-win.tile.div<-adonis2(win.tile.dist~plot.type*date2, data=win.tile, permutations = 999, method="bray", strata="PLOT")
-win.tile.div
-# We have a strong interaction between plot type and date!!!
-
-# PCA plot 
-win.dispersion<-betadisper(win.tile.dist, group=win.tile$plot.type)
-permutest(win.dispersion)
-plot(win.dispersion, hull=FALSE, ellipse=TRUE) ##sd ellipse
-
-### now nmds ###
-
-win.tile.MDS<-metaMDS(win.tile.mat, distance="bray", k=2, trymax=35, autotransform=TRUE) ##k is the number of dimensions
-win.tile.MDS # multivariate dispersians are homogenious 
-stressplot(win.tile.MDS)
+  geom_point(data=meta,aes(x=NMDS1,y=NMDS2,shape=source,colour=source),size=2) 
 
 
-##ok now follow
-# https://chrischizinski.github.io/rstats/vegan-ggplot2/
-
-w.data.scores <- as.data.frame(scores(win.tile.MDS))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
-w.data.scores$site <- rownames(w.data.scores)  # create a column of site names, from the rownames of data.scores
-w.data.scores$grp <- win.tile$plot.type  #  add the grp variable created earlier
-head(w.data.scores)  #look at the data
-
-w.species.scores <- as.data.frame(scores(win.tile.MDS, "species"))  #Using the scores function from vegan to extract the species scores and convert to a data.frame
-w.species.scores$species <- rownames(w.species.scores)  # create a column of species, from the rownames of species.scores
-head(w.species.scores)  #look at the data
-
-ggplot() + 
-  geom_text(data=w.species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=w.data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=2) + # add the point markers
-  geom_text(data=w.data.scores,aes(x=NMDS1,y=NMDS2,label=site),size=6,vjust=0) +  # add the site labels
-  scale_colour_manual(values=c("cage" = "red", "open" = "green","pc" = "blue")) +
-  coord_equal() +
-  theme_bw()
-
-ggplot() + 
-  geom_text(data=w.species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=w.data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=2) + # add the point markers
-  geom_text(data=w.data.scores,aes(x=NMDS1,y=NMDS2,label=site),size=4,vjust=0,hjust=0) +  # add the site labels
-  scale_colour_manual(values=c("cage" = "red", "open" = "green","pc" = "blue")) +
-  coord_equal() +
-  theme_bw() + 
-  theme(axis.text.x = element_blank(),  # remove x-axis text
-        axis.text.y = element_blank(), # remove y-axis text
-        axis.ticks = element_blank(),  # remove axis ticks
-        axis.title.x = element_text(size=18), # remove x-axis labels
-        axis.title.y = element_text(size=18), # remove y-axis labels
-        panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank(),  #remove minor-grid labels
-        plot.background = element_blank())
-
-w.grp.open <- w.data.scores[w.data.scores$grp == "open", ][chull(w.data.scores[w.data.scores$grp == 
-                                                                         "open", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
-w.grp.cage <- w.data.scores[w.data.scores$grp == "cage", ][chull(w.data.scores[w.data.scores$grp == 
-                                                                         "cage", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
-w.grp.pc <- w.data.scores[w.data.scores$grp == "pc", ][chull(w.data.scores[w.data.scores$grp == 
-                                                                     "pc", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
-
-w.hull.data <- rbind(w.grp.open, w.grp.cage, w.grp.pc)  #combine grp.a and grp.b
-w.hull.data
-
-ggplot() + 
-  geom_polygon(data=w.hull.data,aes(x=NMDS1,y=NMDS2,fill=grp,group=grp),alpha=0.30) + # add the convex hulls
-  geom_text(data=w.species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=w.data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=4) + # add the point markers
-  scale_colour_manual(values=c("cage" = "red", "open" = "green","pc" = "blue")) +
-  scale_fill_discrete(name="Urchin treatment",
-                      breaks=c("cage", "open", "pc"),
-                      labels=c("excluded","present","partial cage"))+
-  scale_shape_discrete(name="Urchin treatment",
-                       breaks=c("cage", "open", "pc"),
-                       labels=c("excluded","present","partial cage"))+
-  scale_colour_discrete(name="Urchin treatment",
-                        breaks=c("cage", "open", "pc"),
-                        labels=c("excluded","present","partial cage"))+
-  coord_equal() +
-  theme_bw() + 
-  theme(axis.text.x = element_blank(),  # remove x-axis text
-        axis.text.y = element_blank(), # remove y-axis text
-        axis.ticks = element_blank(),  # remove axis ticks
-        axis.title.x = element_text(size=18), # remove x-axis labels
-        axis.title.y = element_text(size=18), # remove y-axis labels
-        panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank(),  #remove minor-grid labels
-        plot.background = element_blank())+
-  theme(legend.text = element_text(size = 12))+
-  theme(legend.title = element_text(size = 14))
-
-p2 <- ggplot() + 
-  geom_polygon(data=w.hull.data,aes(x=NMDS1,y=NMDS2,fill=grp,group=grp),alpha=0.30) + # add the convex hulls
-  geom_text(data=w.species.scores,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=w.data.scores,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=4) + # add the point markers
-  scale_colour_manual(values=c("cage" = "red", "open" = "green","pc" = "blue")) +
-  scale_fill_discrete(name="Urchin treatment",
-                      breaks=c("cage", "open", "pc"),
-                      labels=c("excluded","present","partial cage"))+
-  scale_shape_discrete(name="Urchin treatment",
-                       breaks=c("cage", "open", "pc"),
-                       labels=c("excluded","present","partial cage"))+
-  scale_colour_discrete(name="Urchin treatment",
-                        breaks=c("cage", "open", "pc"),
-                        labels=c("excluded","present","partial cage"))+
-  coord_equal() +
-  theme_bw() + 
-  theme(axis.text.x = element_blank(),  # remove x-axis text
-        axis.text.y = element_blank(), # remove y-axis text
-        axis.ticks = element_blank(),  # remove axis ticks
-        axis.title.x = element_text(size=18), # remove x-axis labels
-        axis.title.y = element_text(size=18), # remove y-axis labels
-        panel.background = element_blank(), 
-        panel.grid.major = element_blank(),  #remove major-grid labels
-        panel.grid.minor = element_blank(),  #remove minor-grid labels
-        plot.background = element_blank())+
-  theme(legend.text = element_text(size = 12))+
-  theme(legend.title = element_text(size = 14))
-
-
-###########################################################################
-###                       Combine plots                                 ###
-###########################################################################
-
-plot_grid(p1, p2,
-          label_x = 0, label_y = 1, nrow=2, ncol=1, align="h",
-          labels = c("Summer","Winter"), hjust=-0.5,
-          label_size=20,
-          rel_widths = c(4,4))
