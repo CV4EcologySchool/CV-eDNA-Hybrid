@@ -18,6 +18,7 @@ import numpy as np
 import os
 os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier")
 
+import json
 import argparse
 import yaml
 from util_tf import init_seed
@@ -27,12 +28,14 @@ from tf_loader import CTDataset
 
 parser = argparse.ArgumentParser(description='Train deep learning model.')
 parser.add_argument('--config', help='Path to config file', default='../configs/exp_resnet18_37141.yaml')
-parser.add_argument('--seed', help='Seed index', default = 0)
+parser.add_argument('--seed', help='Seed index', type=int, default = 0)
 args = parser.parse_args()
 
 # load config
 print(f'Using config "{args.config}"')
 cfg = yaml.safe_load(open(args.config, 'r'))
+
+print(args.seed)
 
 cfg["seed"] = cfg["seed"][args.seed]
 seed = cfg["seed"]
@@ -70,8 +73,11 @@ for layer in base_model.layers:
       
 model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=10)
-checkpoint = ModelCheckpoint('image-only.h5', monitor='val_loss', save_best_only=True)
+# early_stopping = EarlyStopping(monitor='val_loss', patience=1)
+checkpoint = ModelCheckpoint(f'{experiment}_{seed}.h5', monitor='val_loss', save_best_only=True)
+
+# min_epochs = 50
+# patience = 10
 
 epochs = cfg['num_epochs']
 
@@ -79,31 +85,37 @@ history = model.fit(train_data,
                     epochs = epochs, 
                     verbose = 1,
                     validation_data = valid_data,
-                    callbacks = [early_stopping, checkpoint])
+                    callbacks = [checkpoint])
+
+best_epoch = np.argmin(history.history['val_loss']) + 1
+
+with open(f'{experiment}_{seed}_{best_epoch}.json', 'w') as json_file:
+    json.dump(history.history, json_file)
+
 
 #sys.stdout.close()
 #sys.stdout = sys.__stdout__
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-# Plot accuracy
-plt.figure(figsize=(8, 6))
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
-plt.title(f'{experiment} Accuracy', fontsize=16)
-plt.xlabel('Epoch', fontsize=14)
-plt.ylabel('Accuracy', fontsize=14)
-plt.legend(['Train', 'Validation'], loc='upper left', fontsize=12)
-plt.tick_params(axis='both', labelsize=12)
-plt.show()
+# # Plot accuracy
+# plt.figure(figsize=(8, 6))
+# plt.plot(history.history['accuracy'])
+# plt.plot(history.history['val_accuracy'])
+# plt.title(f'{experiment} Accuracy', fontsize=16)
+# plt.xlabel('Epoch', fontsize=14)
+# plt.ylabel('Accuracy', fontsize=14)
+# plt.legend(['Train', 'Validation'], loc='upper left', fontsize=12)
+# plt.tick_params(axis='both', labelsize=12)
+# plt.show()
 
-# Plot loss
-plt.figure(figsize=(8, 6))
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title(f'{experiment} Loss', fontsize=16)
-plt.xlabel('Epoch', fontsize=14)
-plt.ylabel('Loss', fontsize=14)
-plt.legend(['Train', 'Validation'], loc='upper right', fontsize=12)
-plt.tick_params(axis='both', labelsize=12)
-plt.show()
+# # Plot loss
+# plt.figure(figsize=(8, 6))
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['val_loss'])
+# plt.title(f'{experiment} Loss', fontsize=16)
+# plt.xlabel('Epoch', fontsize=14)
+# plt.ylabel('Loss', fontsize=14)
+# plt.legend(['Train', 'Validation'], loc='upper right', fontsize=12)
+# plt.tick_params(axis='both', labelsize=12)
+# plt.show()
