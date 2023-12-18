@@ -3,16 +3,16 @@ isopod_idx = which(invert_cleanlab$AllTaxa == "Isopoda")
 invert_cleanlab$Det_Level[isopod_idx] = "Class"
 invert_cleanlab$AllTaxa[isopod_idx] = "Crustacea"
 
-arachnid_idx = which(invert_cleanlab$LKTL == "Arachnida")
+arachnid_idx = which(invert_cleanlab$LITL == "Arachnida")
 invert_cleanlab$Det_Level[arachnid_idx] = "Class"
 
-arachnid_idx = which(invert_cleanlab$LKTL == "Insecta")
+arachnid_idx = which(invert_cleanlab$LITL == "Insecta")
 invert_cleanlab$Det_Level[arachnid_idx] = "Class"
 
 
 alldata = invert_cleanlab
 
-allname = levels(as.factor(alldata$LKTL))
+allname = levels(as.factor(alldata$LITL))
 hierarchylevels = c("Species", 
                     "Genus", 
                     "Subfamily", 
@@ -33,8 +33,8 @@ hierarchy[,1] = allname
 for(i in 2:ncol(hierarchy)){
   for(j in 1:length(allname)){
     if(allname[j] != "Ignore"){
-      if(which(hierarchylevels == alldata[which(alldata$LKTL == allname[j])[1], "Det_Level"]) < i){
-        hierarchy[j,i] = as.character(alldata[which(alldata$LKTL == allname[j])[1],names(hierarchy)[i]])
+      if(which(hierarchylevels == alldata[which(alldata$LITL == allname[j])[1], "Det_level"]) < i){
+        hierarchy[j,i] = as.character(alldata[which(alldata$LITL == allname[j])[1],names(hierarchy)[i]])
       }
       else{
         hierarchy[j,i] = hierarchy[j,1]
