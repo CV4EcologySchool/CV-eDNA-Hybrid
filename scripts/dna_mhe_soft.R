@@ -1,7 +1,7 @@
 
 
-sprow = which(ednaclean$det_level == "species")
-ednaclean[sprow, "species"] = paste(ednaclean$genus[sprow], ednaclean$species[sprow])
+sprow = which(edna_rmdup$det_level == "species")
+edna_rmdup[sprow, "species"] = paste(edna_rmdup$genus[sprow], edna_rmdup$species[sprow])
 
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
@@ -12,7 +12,7 @@ rem = c("indet.", "NULL")
 dnabias_list = list()
 
 for(event in event_names){
-  dna_event = unique(as.vector(as.matrix(ednaclean[which(ednaclean$event == event), 1:13])))
+  dna_event = unique(as.vector(as.matrix(edna_rmdup[which(edna_rmdup$Event == event), 1:13])))
   dna_event = dna_event[which(dna_event %!in% rem)]
   x = LKTL_ordered %in% dna_event
   dnabias_list[[event]] = as.integer(x)
@@ -20,14 +20,46 @@ for(event in event_names){
 
 dnabias_mhe = data.frame(do.call(rbind, dnabias_list))
 
+
+##########################################################################################
+
+##This is for doing specificity on the entire dataset using Mike's labels
+valid = invert_cleanlab
+newclass = invert_cleanlab$LKTL
+numnewclass = as.numeric(as.factor(invert_cleanlab$LKTL_Long))
+
+agreed = c()
+for(x in 1:length(numnewclass)){
+  agreed[x] = as.numeric(mhe[which(events == valid$Event[x]),numnewclass[x]])
+}
+agreed = as.logical(agreed)
+
+# pb = progress_bar$new(
+#   format = "[:bar] :percent Elapsed: :elapsed Time remaining: :eta",
+#   total = nrow(valid)
+# )
+
+################
+### DNA Bias ###
+################
+
 has_taxa <- function(column) {
   any(column %in% taxa_vector)
 }
 
-pb = progress_bar$new(
-  format = "[:bar] :percent Elapsed: :elapsed Time remaining: :eta",
-  total = nrow(valid)
-)
+taxaorder = c("Species",
+              "Genus",
+              "Subfamily",
+              "Family",
+              "Superfamily",
+              "Infraorder",
+              "Suborder",
+              "Order",
+              "Superorder",
+              "Subclass",
+              "Class",
+              "Subphylum",
+              "Phylum")
 
 ednaindex = list()
 cParent = list()
@@ -35,38 +67,48 @@ mrca = c()
 splevels = c()
 for(x in 1:nrow(valid)){
   if(agreed[x]){
-    # Get the row indices in ednaclean where the event and LKTL label match the observation
-    ednaindex[[x]] = which(ednaclean$event == valid$Event[x] & ednaclean$LKTL == newclass[x])
+    # Get the row indices in edna_rmdup where the event and LKTL label match the observation
+    ednaindex[[x]] = which(edna_rmdup$Event == valid$Event[x] & edna_rmdup$LKTL == newclass[x])
     # Get the taxonomic levels where there is no forking in the edna data (minus NULL or indet. values)
-    cParent[[x]] = which(lengths(apply(ednaclean[ednaindex[[x]], c(1:13)], 2, unique)) == 1
-                         & apply(ednaclean[ednaindex[[x]], c(1:13)], 2, unique) %!in% c("NULL", "indet."))
+    cParent[[x]] = which(lengths(apply(edna_rmdup[ednaindex[[x]], taxaorder], 2, unique)) == 1
+                         & apply(edna_rmdup[ednaindex[[x]], taxaorder], 2, unique) %!in% c("NULL", "indet."))
     # Get the name of the most specific group in CParent that doesn't have forking
-    mrca[x] = ednaclean[ednaindex[[x]][1], names(cParent[[x]])[length(cParent[[x]])]]
+    mrca[x] = edna_rmdup[ednaindex[[x]][1], names(cParent[[x]])[1]]
     # Get the specificity of mrca
-    splevels[x] = names(cParent[[x]])[length(cParent[[x]])]
+    splevels[x] = names(cParent[[x]])[1]
     
   }
   else{
-    dna_event = ednaclean[which(ednaclean$event == valid$Event[x]), 1:13]
+    #Get a df of edna data for the current sampling event
+    dna_event = edna_rmdup[which(edna_rmdup$Event == valid$Event[x]), taxaorder]
+    #Get vector of possible taxa labels (i.e. supertaxa) for current observation
     taxa_vector = unlist(hierarchy[which(hierarchy$Species == newclass[x]),])
+    #Logical vector for whether columns in dna_event df have any values in taxa_vector 
     cols = apply(dna_event, 2, has_taxa)
+    #If at least one name is detected:
     if(sum(cols) > 0){
-      col = as.numeric(tail(which(cols), n =1))
+      #Get the most specific column
+      col = as.numeric(which(cols)[1])
+      #Get row indices that contain the name in col
       ednaindex[[x]] = which(dna_event[,col] %in% taxa_vector)
+      #Get the name of the ML/DNA overlap taxon
       overlap = unique(dna_event[ednaindex[[x]], col])
+      #If overlap is > 1, something is wrong
       if(length(overlap) > 1){
         print("Overlap length > 1")
         
         break
       }
-      cParent[[x]] = which(lengths(apply(dna_event[ednaindex[[x]], c(1:13)], 2, unique)) == 1
-                           & apply(dna_event[ednaindex[[x]], c(1:13)], 2, unique) %!in% c("NULL", "indet."))
+      #This is the same as above (I think)
+      cParent[[x]] = which(lengths(apply(dna_event[ednaindex[[x]], taxaorder], 2, unique)) == 1
+                           & apply(dna_event[ednaindex[[x]], taxaorder], 2, unique) %!in% c("NULL", "indet."))
       # Get the name of the most specific group in CParent that doesn't have forking
-      mrca[x] = dna_event[ednaindex[[x]][1], names(cParent[[x]])[length(cParent[[x]])]]
+      mrca[x] = dna_event[ednaindex[[x]][1], names(cParent[[x]])[1]]
       # Get the specificity of mrca
-      splevels[x] = names(cParent[[x]])[length(cParent[[x]])]
+      splevels[x] = names(cParent[[x]])[1]
       
     }
+    #If no names are detected (i.e. the DNA did not detect it even at phylum level), leave classification unchanged
     else{
       ednaindex[[x]] = NA
       cParent[[x]] = NA
@@ -75,6 +117,8 @@ for(x in 1:nrow(valid)){
     }
   }
 }
+
+#The following does the analysis only for cases where the DNA and ML agree
 
 splevels_agreed = splevels[agreed]
 mrca_agreed = mrca[agreed]
@@ -100,31 +144,17 @@ Det_Level = as.factor(Det_Level)
 splevelsog_agreed = factor(splevelsog_agreed, levels = levels(Det_Level))
 #splevelsog_agreed = splevelsog_agreed[agreed]
 
-
-taxaorder = c("Species",
-              "Genus",
-              "Subfamily",
-              "Family",
-              "Superfamily",
-              "Infraorder",
-              "Suborder",
-              "Order",
-              "Superorder",
-              "Subclass",
-              "Class",
-              "Subphylum",
-              "Phylum")
-
 numsplevels_agreed = as.numeric(ordered(splevels_agreed, levels = taxaorder))
 numsplevelsog_agreed = as.numeric(ordered(splevelsog_agreed, levels = taxaorder))
 
 SpecifyImprove_agreed = data.frame(numsplevelsog_agreed, numsplevels_agreed)
-improve_agreed = SpecifyImprove[,1] - SpecifyImprove[,2]
+improve_agreed = SpecifyImprove_agreed[,1] - SpecifyImprove_agreed[,2]
 
 ###########
 ### All ###
 ###########
 
+#The following does the entire DNA bias analysis
 
 splevels = str_to_title(splevels)
 splevels[which(mrca == "Myriapoda")] = "Class"
@@ -180,5 +210,52 @@ numsplevelsog = as.numeric(ordered(splevelsog, levels = taxaorder))
 
 SpecifyImprove_mlbias = data.frame(numsplevelsog, numsplevels_mlbias)
 improve_mlbias = SpecifyImprove_mlbias[,1] - SpecifyImprove_mlbias[,2]
+
+###################################################################################################
+
+og_prop = table(factor(SpecifyImprove[,1], levels = c(1:13)))/nrow(SpecifyImprove)
+og_prop_agreed = table(factor(SpecifyImprove_agreed[,1], levels = c(1:13)))/nrow(SpecifyImprove_agreed)
+
+improve_prop = table(factor(SpecifyImprove[,2], levels = c(1:13)))/nrow(SpecifyImprove)
+improve_prop_agreed = table(factor(SpecifyImprove_agreed[,2], levels = c(1:13)))/nrow(SpecifyImprove_agreed)
+improve_prop_mlbias = table(factor(SpecifyImprove_mlbias[,2], levels = c(1:13)))/nrow(SpecifyImprove_mlbias)
+
+sum(og_prop[1:8])
+sum(og_prop_agreed[1:8])
+sum(improve_prop[1:8])
+sum(improve_prop_agreed[1:8])
+sum(improve_prop_mlbias[1:8])
+
+sum(og_prop[11:13])
+sum(og_prop_agreed[11:13])
+sum(improve_prop[11:13])
+sum(improve_prop_agreed[11:13])
+sum(improve_prop_mlbias[11:13])
+
+# Mike_og_prop = table(factor(SpecifyImprove[,1], levels = c(1:13)))/nrow(SpecifyImprove)
+# Mike_og_prop_agreed = table(factor(SpecifyImprove_agreed[,1], levels = c(1:13)))/nrow(SpecifyImprove_agreed)
+# 
+# Mike_improve_prop = table(factor(SpecifyImprove[,2], levels = c(1:13)))/nrow(SpecifyImprove)
+# Mike_improve_prop_agreed = table(factor(SpecifyImprove_agreed[,2], levels = c(1:13)))/nrow(SpecifyImprove_agreed)
+# Mike_improve_prop_mlbias = table(factor(SpecifyImprove_mlbias[,2], levels = c(1:13)))/nrow(SpecifyImprove_mlbias)
+
+###################################################################################################
+
+# specify_cols = c("Original", "New")
+# 
+# SpecifyImprove = as.data.frame(matrix(taxaorder[as.matrix(SpecifyImprove)], ncol = 2))
+# SpecifyImprove_agreed = as.data.frame(matrix(taxaorder[as.matrix(SpecifyImprove_agreed)], ncol = 2))
+# SpecifyImprove_mlbias = as.data.frame(matrix(taxaorder[as.matrix(SpecifyImprove_mlbias)], ncol = 2))
+# 
+# 
+# colnames(SpecifyImprove) = specify_cols
+# colnames(SpecifyImprove_agreed) = specify_cols
+# colnames(SpecifyImprove_mlbias) = specify_cols
+# 
+# 
+# write.csv(SpecifyImprove, "Mike_specify_DNA_bias.csv", row.names = F)
+# write.csv(SpecifyImprove_agreed, "Mike_specify_agreed.csv", row.names = F)
+# write.csv(SpecifyImprove_mlbias, "Mike_specify_ML_bias.csv", row.names = F)
+
 
 
