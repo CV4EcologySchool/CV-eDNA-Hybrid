@@ -5,7 +5,7 @@ Created on Mon Aug 28 15:17:30 2023
 @author: jarre
 """
 
-from skmultilearn.problem_transform import BinaryRelevance
+#from skmultilearn.problem_transform import BinaryRelevance
 from sklearn.metrics import precision_score, recall_score, confusion_matrix
 import numpy as np
 import json

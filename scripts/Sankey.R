@@ -52,4 +52,4 @@ sankeyplot = function(newlevels, oglevels, taxaorder){
   return(sankey)
 }
 
-sankeyplot(splevels_mlbias, splevelsog, taxaorder)
+sankeyplot(splevels, splevelsog, taxaorder)

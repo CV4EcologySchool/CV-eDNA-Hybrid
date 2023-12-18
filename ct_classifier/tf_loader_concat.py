@@ -87,7 +87,7 @@ class CTDataset:
 
         # Shuffle and batch the dataset
         if self.split == 'train':
-            data = data.shuffle(buffer_size = 1000, seed = self.seed)
+            data = data.shuffle(buffer_size = 1000)
             data = data.map(
                 self.data_augmentation,
                 num_parallel_calls=tf.data.experimental.AUTOTUNE
