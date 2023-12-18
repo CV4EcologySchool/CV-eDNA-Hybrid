@@ -3,6 +3,7 @@ model_states
 local
 
 *.h5
+*.json
 
 __pycache__
 *.pyc
