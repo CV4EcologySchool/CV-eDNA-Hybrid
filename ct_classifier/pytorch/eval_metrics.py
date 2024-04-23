@@ -6,7 +6,7 @@ Created on Fri Aug 18 10:37:09 2023
 """
 
 import os
-os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier")
+os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier\pytorch")
 
 import yaml
 import copy

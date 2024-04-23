@@ -110,7 +110,7 @@ def main():
     
     for i in range(len(cfg['seed'])):
         # load model
-        model = tf.keras.models.load_model(f'{experiment}_{seed[i]}.h5')
+        model = tf.keras.models.load_model(f'model_states\{experiment}\{experiment}_{seed[i]}.h5')
         
         probs[i] = model.predict(test_generator)
         predicted_classes[i] = tf.argmax(probs[i], axis=1)
@@ -129,6 +129,7 @@ def main():
                                   zero_division=1)
             recall_values = [report[i][level][key]['recall'] for key in set(named_true_short[level])]
             average_recall[i][level] = sum(recall_values) / len(recall_values)
+            
     
     accuracy_values = [d["Species"]['accuracy'] for d in report]
     recall = [average_recall[i]["Species"] for i in range(5)]
