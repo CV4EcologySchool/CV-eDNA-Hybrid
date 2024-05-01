@@ -1,3 +1,6 @@
+# This code creates the LKTL labels (both short and long) and adds them to the invert_cleanlab dataframe
+
+
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
 # Fills hierarchy for given single-level labels
@@ -76,7 +79,7 @@ invert_cleanlab$LKTL_Long = LKTL_Long
 
 
 #Create long LKTL labels 
-dna_LKTL_Longdf = longhier(ednaLITL, hierarchy)
+dna_LKTL_Longdf = longhier(ednaLKTL, hierarchy)
 
 dna_LKTL_Long = apply(dna_LKTL_Longdf[, 1:6], 1, function(row) {
   paste(rev(row), collapse = "_")

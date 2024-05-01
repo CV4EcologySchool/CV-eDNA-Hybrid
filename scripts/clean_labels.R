@@ -1,3 +1,12 @@
+# Initializes invert_cleanlab dataframe. This removes some junk groups like 'Arthropoda'
+# Merging of underrepresented groups does not happen here
+
+#Make sure you have run init_datasets first to get invertmatch dataframe
+
+setwd("C:/Users/jarre/ownCloud/CV-eDNA")
+
+invertmatch = read.csv("invertmatch.csv")
+
 invertmatch$Det_Level[which(invertmatch$X == 16412)] = "Subfamily"
 invertmatch$AllTaxa[which(invertmatch$X == 16412)] = "Entiminae"
 
