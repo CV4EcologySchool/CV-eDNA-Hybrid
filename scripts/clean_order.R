@@ -5,7 +5,9 @@
 setwd("C:/Users/jarre/ownCloud/CV-eDNA")
 
 invertmatch = read.csv("invertmatch.csv")
+ednamatch = read.csv("ednamatch.csv")
 hierarchy = read.csv("hierarchy_order.csv")
+edna_rmdup = read.csv("edna_rmdup.csv")
 
 
 invert_cleanlab = invertmatch[-which(invertmatch$AllTaxa == "Arthropoda"),]
@@ -13,6 +15,8 @@ invert_cleanlab = invertmatch[-which(invertmatch$AllTaxa == "Arthropoda"),]
 invert_cleanlab = invert_cleanlab[-which(invert_cleanlab$AllTaxa == "Arachnida"),]
 
 invert_cleanlab$Class[which(invert_cleanlab$Subphylum == "Myriapoda")] = "Myriapoda"
+
+invert_cleanlab$Det_Level[which(invert_cleanlab$Class == "Gastropoda")] = "Class"
 
 invert_cleanlab = invert_cleanlab[-which(invert_cleanlab$AllTaxa == "Insecta"),]
 
@@ -93,6 +97,46 @@ for(i in 1:nrow(longlabels)){
 }
 
 invert_cleanlab$order_plus = order_plus
+
+longlab_vector = apply(longlabels[,-c(1:3,7)], 1, function(row) {
+  reversed_row <- rev(row)
+  paste(reversed_row, collapse = "_")
+})
+invert_cleanlab$longlab = longlab_vector
+
+################################################################################
+
+# Now for the DNA
+
+#hier_fun from hierarchy.R
+dna_hierarchy = hier_fun(edna_rmdup, "LITL", det_level = 'Det_level')
+
+dna_longlabels = longhier(edna_rmdup$LITL, dna_hierarchy)
+dna_longlabels$Class[which(dna_longlabels$Class %in% c("Diplopoda", "Chilopoda"))] = "Myriapoda"
+dna_longlabels$Order[which(edna_rmdup$Subclass == "Acari")] = "Acari"
+
+# Add known column to longlabels
+dna_longlabels = getknown(dna_longlabels, Keep_Orders)
+
+
+dna_order_plus = c()
+for(i in 1:nrow(dna_longlabels)){
+  if(is.na(dna_longlabels$known[i])){
+    dna_order_plus[i] = NA
+  }
+  else{
+    dna_order_plus[i] = dna_longlabels[i,dna_longlabels$known[i]]
+  }
+}
+
+edna_rmdup$order_plus = dna_order_plus
+
+dnalonglab_vector = longhier(dna_order_plus, hierarchy)
+dnalonglab_vector = apply(dnalonglab_vector[,-c(1:3,7)], 1, function(row) {
+  reversed_row <- rev(row)
+  paste(reversed_row, collapse = "_")
+})
+edna_rmdup$longlab = dnalonglab_vector
 
 
 
