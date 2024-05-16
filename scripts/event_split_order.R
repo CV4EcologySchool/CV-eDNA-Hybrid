@@ -33,6 +33,8 @@ for (i in 1:nrow(shuffled_data)) {
 
 invert_cleanlab$order_plus = as.factor(invert_cleanlab$order_plus)
 invert_cleanlab$longlab = as.factor(invert_cleanlab$longlab)
+invert_cleanlab$Label = paste0(invert_cleanlab$Label, ".tif.", invert_cleanlab$ROI, ".jpg")
+
 val_split1 = invert_cleanlab[which(invert_cleanlab$Event %in% sampled_events),]
 train_split1 = invert_cleanlab[-which(invert_cleanlab$Event %in% sampled_events),]
 
@@ -63,6 +65,9 @@ mhe$Event = event_names
 
 train_split1 = merge(train_split1, mhe, by = "Event", all = F)
 val_split1 = merge(val_split1, mhe, by = "Event", all = F)
+
+train_split1 = train_split1[, !names(train_split1) %in% c("NA")]
+val_split1 = val_split1[, !names(val_split1) %in% c("NA")]
 
 write.csv(train_split1, "train.csv", row.names = F)
 write.csv(val_split1, "valid.csv", row.names = F)
