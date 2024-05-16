@@ -11,11 +11,11 @@ cumulative_freq <- 0
 sampled_events <- character(0)
 stop = nrow(invert_cleanlab) * 0.15
 
-holdout_events = c("OAES00520160629",
-                   "CPER00220160714")
-shuffled_data = shuffled_data[-which(shuffled_data$Var1 %in% holdout_events),]
+# holdout_events = c("OAES00520160629",
+#                    "CPER00220160714")
+# shuffled_data = shuffled_data[-which(shuffled_data$Var1 %in% holdout_events),]
 
-
+set.seed(123)
 # Iterate through shuffled rows
 for (i in 1:nrow(shuffled_data)) {
   site <- as.character(shuffled_data[i, "Var1"])
@@ -24,25 +24,25 @@ for (i in 1:nrow(shuffled_data)) {
   # Check if adding the current frequency exceeds 100
   if (cumulative_freq + freq >= stop) {
     sampled_events <- c(sampled_events, site)
-    break  # Exit loop since condition is satisfied
+    break
   } else {
     sampled_events <- c(sampled_events, site)
     cumulative_freq <- cumulative_freq + freq
   }
 }
 
-invert_cleanlab$LKTL = as.factor(invert_cleanlab$LKTL)
-invert_cleanlab$LKTL_Long = as.factor(invert_cleanlab$LKTL_Long)
+invert_cleanlab$order_plus = as.factor(invert_cleanlab$order_plus)
+invert_cleanlab$longlab = as.factor(invert_cleanlab$longlab)
 val_split1 = invert_cleanlab[which(invert_cleanlab$Event %in% sampled_events),]
 train_split1 = invert_cleanlab[-which(invert_cleanlab$Event %in% sampled_events),]
 
 
 
 #######################################################################################
-val_split1_abund = as.data.frame(table(val_split1$LKTL))
-val_split1_prev = as.data.frame(table(val_split1$LKTL)/nrow(val_split1))
-train_split1_abund = as.data.frame(table(train_split1$LKTL))
-train_split1_prev = as.data.frame(table(train_split1$LKTL)/nrow(train_split1))
+val_split1_abund = as.data.frame(table(val_split1$order_plus))
+val_split1_prev = as.data.frame(table(val_split1$order_plus)/nrow(val_split1))
+train_split1_abund = as.data.frame(table(train_split1$order_plus))
+train_split1_prev = as.data.frame(table(train_split1$order_plus)/nrow(train_split1))
 
 prev_combined = cbind(train_split1_prev, val_split1_prev)
 prev_combined = prev_combined[,-3]
@@ -55,16 +55,14 @@ abund_combined = abund_combined[,-3]
 abund_combined$ratio = abund_combined$Freq/abund_combined$Freq.1
 
 
-mhe = read.csv("C:/Users/jarre/ownCloud/CV-eDNA/splits/LKTL-37141/dna_mhe.csv")
+mhe = read.csv("C:/Users/jarre/ownCloud/CV-eDNA/dna_mhe_order.csv")
+mhe = mhe[,-1]
+colnames(mhe) = c(levels(invert_cleanlab$longlab))
 event_names = events$Var1
 mhe$Event = event_names
 
 train_split1 = merge(train_split1, mhe, by = "Event", all = F)
 val_split1 = merge(val_split1, mhe, by = "Event", all = F)
-
-normParam <- preProcess(train_split1[,89:125])
-val_split1[,89:125] <- predict(normParam, val_split1[,89:125])
-train_split1[,89:125] <- predict(normParam, train_split1[,89:125])
 
 write.csv(train_split1, "train.csv", row.names = F)
 write.csv(val_split1, "valid.csv", row.names = F)
