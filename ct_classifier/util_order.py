@@ -16,6 +16,7 @@ from tensorflow.keras.callbacks import Callback
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import seaborn as sns
+from IPython.display import clear_output
 
 def init_seed(seed):
     
@@ -199,4 +200,38 @@ def multilabel_accuracy(y_true, y_pred):
 
     accuracy = correct_samples / num_samples
     return accuracy
+
+class PlotLosses(Callback):
+    def __init__(self):
+        super(PlotLosses, self).__init__()
+        self.epoch_loss = []
+        self.epoch_val_loss = []
+        
+    def on_train_begin(self, logs=None):
+        self.fig, self.ax = plt.subplots()
+        self.ax.set_xlabel('Epochs')
+        self.ax.set_ylabel('Loss')
+        self.line1, = self.ax.plot([], [], label='Training Loss')
+        self.line2, = self.ax.plot([], [], label='Validation Loss')
+        self.ax.legend()
+        plt.ion()
+        plt.show()
+        
+    def on_epoch_end(self, epoch, logs=None):
+        self.epoch_loss.append(logs['loss'])
+        self.epoch_val_loss.append(logs['val_loss'])
+        self.line1.set_data(range(len(self.epoch_loss)), self.epoch_loss)
+        self.line2.set_data(range(len(self.epoch_val_loss)), self.epoch_val_loss)
+        self.ax.set_xlim(0, len(self.epoch_loss))
+        self.ax.set_ylim(0, max(max(self.epoch_loss), max(self.epoch_val_loss)))
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+
+
+
+
+
+
+
+
 
