@@ -10,6 +10,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import concatenate
+from tensorflow.keras.optimizers import Adam
 from sklearn.preprocessing import LabelEncoder
 from keras.utils import np_utils
 from tensorflow.keras.layers import Input
@@ -21,21 +22,27 @@ os.chdir(r"C:\Users\blair\OneDrive - UBC\CV-eDNA-Hybrid\ct_classifier")
 import json
 import argparse
 import yaml
-from util_tf import init_seed
+from util_order import init_seed, PlotLosses
 from tf_loader import CTDataset
+
+from sklearn.utils.class_weight import compute_class_weight
+from tensorflow.keras.metrics import Recall
+
+from IPython import get_ipython
+
+# Ensure that interactive mode is enabled
+#et_ipython().run_line_magic('matplotlib', 'qt')
 
 #import sys
 
 parser = argparse.ArgumentParser(description='Train deep learning model.')
-parser.add_argument('--config', help='Path to config file', default='../configs/exp_resnet18_37141.yaml')
+parser.add_argument('--config', help='Path to config file', default='../configs/exp_order_base.yaml')
 parser.add_argument('--seed', help='Seed index', type=int, default = 0)
 args = parser.parse_args()
 
 # load config
 print(f'Using config "{args.config}"')
 cfg = yaml.safe_load(open(args.config, 'r'))
-
-print(args.seed)
 
 cfg["seed"] = cfg["seed"][args.seed]
 seed = cfg["seed"]
@@ -46,6 +53,18 @@ experiment = cfg["experiment_name"]
 output_file = f'{experiment}.txt'
 
 #sys.stdout = open(output_file, "w")
+
+# Load annotation file
+anno_path = os.path.join(
+    cfg["data_root"],
+    cfg["annotate_root"],
+    'train.csv'
+)
+
+meta = pd.read_csv(anno_path)
+classes = meta["longlab"].values
+class_weights = compute_class_weight(class_weight="balanced", classes=np.unique(classes), y=classes)
+class_weights = dict(enumerate(class_weights))
 
 init_seed(seed)
 
@@ -68,28 +87,36 @@ x = Dropout(0.3)(x)
 predict = Dense(num_class, activation = "softmax")(x)
 model = Model(inputs = base_model.input, outputs = predict)
 
+learning_rate = 0.0001
+optimizer = Adam(learning_rate=learning_rate)
+
 for layer in base_model.layers:
     layer.trainable = False
-      
-model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
+
+model.compile(optimizer = optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
+
+## Define callbacks
 # early_stopping = EarlyStopping(monitor='val_loss', patience=1)
-checkpoint = ModelCheckpoint(f'{experiment}_{seed}.h5', monitor='val_loss', save_best_only=True)
+cp_loss = ModelCheckpoint(f'{experiment}_loss.h5', monitor='val_loss', save_best_only=True)
+cp_acc = ModelCheckpoint(f'{experiment}_acc.h5', monitor='val_accuracy', save_best_only=True)
+#plot_losses = PlotLosses()
 
-# min_epochs = 50
-# patience = 10
-
-epochs = cfg['num_epochs']
+epochs = 500
 
 history = model.fit(train_data,
                     epochs = epochs, 
                     verbose = 1,
                     validation_data = valid_data,
-                    callbacks = [checkpoint])
+                    callbacks = [cp_loss,
+                                 cp_acc,
+                                 #plot_losses,
+                                 ],
+                    class_weight=class_weights)
 
 best_epoch = np.argmin(history.history['val_loss']) + 1
 
-with open(f'{experiment}_{seed}_{best_epoch}.json', 'w') as json_file:
+with open(f'{experiment}_{best_epoch}.json', 'w') as json_file:
     json.dump(history.history, json_file)
 
 
@@ -119,3 +146,4 @@ with open(f'{experiment}_{seed}_{best_epoch}.json', 'w') as json_file:
 # plt.legend(['Train', 'Validation'], loc='upper right', fontsize=12)
 # plt.tick_params(axis='both', labelsize=12)
 # plt.show()
+
