@@ -11,9 +11,9 @@ import numpy as np
 import pandas as pd
 from pySankey.sankey import sankey
 
-os.chdir(r"C:\Carabid_Data\CV-eDNA\splits\LKTL-37141")
+os.chdir(r"C:\Carabid_Data\CV-eDNA")
 
-df = pd.read_csv("Mike_specify_agreed.csv", sep = ",")
+df = pd.read_csv("ML_DNABias.csv", sep = ",")
 
 taxaorder = np.array(["Phylum",
               "Subphylum",
@@ -37,7 +37,7 @@ leftLabels = [x in df["Original"].values for x in taxaorder]
 leftLabels = taxaorder[leftLabels]
 leftLabels = leftLabels.tolist()
 
-leftgap = 0.123
+leftgap = 0.275
 rightgap = 0.1
 
 sankey(left = df["Original"], 
