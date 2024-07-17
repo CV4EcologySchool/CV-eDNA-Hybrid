@@ -10,20 +10,11 @@ hierarchy = read.csv("hierarchy_order.csv")
 edna_rmdup = read.csv("edna_rmdup.csv")
 
 
-#Fix this!
-edna_rmdup = edna_rmdup[-which(edna_rmdup$Speciesname == "Ochlerotatus communis" & edna_rmdup$Phylum == "Annelida"),]
-
-
 invert_cleanlab = invertmatch[-which(invertmatch$AllTaxa == "Arthropoda"),]
-
 invert_cleanlab = invert_cleanlab[-which(invert_cleanlab$AllTaxa == "Arachnida"),]
-
 invert_cleanlab$Class[which(invert_cleanlab$Subphylum == "Myriapoda")] = "Myriapoda"
-
 invert_cleanlab$Det_Level[which(invert_cleanlab$Class == "Gastropoda")] = "Class"
-
 invert_cleanlab$Det_Level[which(invert_cleanlab$Phylum == "Annelida")] = "Phylum"
-
 invert_cleanlab = invert_cleanlab[-which(invert_cleanlab$AllTaxa == "Insecta"),]
 
 

@@ -59,18 +59,16 @@ abund_combined$ratio = abund_combined$Freq/abund_combined$Freq.1
 
 mhe = read.csv("C:/Users/jarre/ownCloud/CV-eDNA/dna_mhe_order.csv")
 mhe = mhe[,-1]
-colnames(mhe) = c(levels(invert_cleanlab$longlab))
+colnames(mhe) = c(levels(as.factor((invert_cleanlab$longlab))))
 event_names = events$Var1
 mhe$Event = event_names
 
 train_split1 = merge(train_split1, mhe, by = "Event", all = F)
 val_split1 = merge(val_split1, mhe, by = "Event", all = F)
 
-train_split1 = train_split1[, !names(train_split1) %in% c("NA")]
-val_split1 = val_split1[, !names(val_split1) %in% c("NA")]
-
 write.csv(train_split1, "train.csv", row.names = F)
 write.csv(val_split1, "valid.csv", row.names = F)
+
 
 dna_train = edna_rmdup[which(edna_rmdup$event %!in% sampled_events),]
 dna_train_LKTL_Long = dna_LKTL_Long[which(edna_rmdup$event %!in% sampled_events)]
