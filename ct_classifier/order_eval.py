@@ -94,13 +94,13 @@ def main():
       
     
     # load model
-    model = tf.keras.models.load_model(f'model_states\{experiment}\{experiment}_{seed[0]}.h5')
+    model = tf.keras.models.load_model(f'model_states\{experiment}\{experiment}_loss_w.h5')
     
     probs = model.predict(test_generator)
     predicted_classes = tf.argmax(probs, axis=1)
     predicted_classes = predicted_classes.numpy()
     
-    predicted_classes = predicted_classes - 1
+    predicted_classes = predicted_classes
       
     named_pred_long = [Y_ordered[index] for index in predicted_classes]
     named_pred_short = [Y_ordered[index] for index in predicted_classes]

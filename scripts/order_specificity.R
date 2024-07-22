@@ -1,13 +1,13 @@
 library(stringr)
 
-setwd("C:/Users/jarre/ownCloud/CV-eDNA")
+setwd("C:/Carabid_Data/CV-eDNA/splits/order")
 
 # bool vector of whether or not the predicted class is detected by the DNA 
 agreed = c()
 # numeric classificaton labels
 newclass = read.csv("preds_concat_named.csv")
 newclass = newclass[,1]
-numnewclass = read.csv("preds_concat.csv")
+numnewclass = read.csv("concat_DNA_preds.csv")
 numnewclass = numnewclass[,1]
 numnewclass = numnewclass + 1
 mhe = read.csv("dna_mhe_order.csv")

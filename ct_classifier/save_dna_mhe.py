@@ -6,7 +6,6 @@ Created on Thu Aug 31 11:40:47 2023
 """
 
 
-from skmultilearn.problem_transform import BinaryRelevance
 from sklearn.metrics import precision_score, recall_score, confusion_matrix
 import pandas as pd
 import numpy as np
@@ -14,9 +13,9 @@ import json
 import os
 
 # Sample data
-with open(r"C:\Carabid_Data\CV-eDNA\splits\LKTL-37141\image_multilab_nosplit.json") as json_file:
+with open(r"C:\Carabid_Data\CV-eDNA\splits\order\image_multilab_order.json") as json_file:
     image_multilab = json.load(json_file)
-with open(r"C:\Carabid_Data\CV-eDNA\splits\LKTL-37141\dna_multilab_nosplit.json") as json_file:
+with open(r"C:\Carabid_Data\CV-eDNA\splits\order\dna_multilab_order.json") as json_file:
     dna_multilab = json.load(json_file)
 
 ground_truth = [value for value in image_multilab.values()]

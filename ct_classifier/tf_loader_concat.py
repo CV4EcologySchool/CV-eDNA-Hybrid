@@ -44,7 +44,7 @@ class CTDataset:
         
         train_path = os.path.join(
             os.path.dirname(anno_path),
-            'train.csv'
+            f'{train_name}.csv'
         )
         
         meta = pd.read_csv(anno_path)
