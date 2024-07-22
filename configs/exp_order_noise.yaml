@@ -2,7 +2,7 @@
 # You can also create lists and group parameters together into nested sub-parts.
 # In Python, this is all read as a dict.
 
-experiment_name: image-only-order
+experiment_name: noise
 
 # environment/computational parameters
 seed: [7028124, 35927022, 11701998, 54659065, 35776248]
@@ -12,10 +12,15 @@ num_workers: 4
 # dataset parameters
 data_root: C:/Carabid_Data/CV-eDNA
 annotate_root: splits/order
+train_name: train_noise
+val_name: valid_noise
 class_labels: longlab
 short_labels: order_plus
 file_name: Label
 num_classes: 17
+data_cols: [86, 103]
+num_col: 17
+
 
 # training hyperparameters
 image_size: [224, 224]
@@ -23,3 +28,4 @@ num_epochs: 100
 batch_size: 128
 learning_rate: 0.0001
 weight_decay: 0.001
+hidden_size: 128
