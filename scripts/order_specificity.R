@@ -5,9 +5,9 @@ setwd("C:/Users/jarre/ownCloud/CV-eDNA")
 # bool vector of whether or not the predicted class is detected by the DNA 
 agreed = c()
 # numeric classificaton labels
-newclass = read.csv("preds_concat_named.csv")
+newclass = read.csv("concat_DNA_named-preds.csv")
 newclass = newclass[,1]
-numnewclass = read.csv("preds_concat.csv")
+numnewclass = read.csv("concat_DNA_preds.csv")
 numnewclass = numnewclass[,1]
 numnewclass = numnewclass + 1
 mhe = read.csv("dna_mhe_order.csv")
@@ -103,38 +103,41 @@ for(x in 1:nrow(valid)){
   }
 }
 
-splevels[is.na(splevels)] = valid[is.na(splevels),"Det_level"]
+# This could cause some problems if Det_Level hasn't been adjusted
+# for order level labels. But in this case it seems fine.
+# Bigger issue actually is that I'm using valid instead of newclass,
+# but again, it is fine in this case.
+splevels[is.na(splevels)] = valid[is.na(splevels),"Det_Level"]
 
-#The following does the analysis only for cases where the DNA and ML agree
-
-splevels_agreed = splevels[agreed]
-mrca_agreed = mrca[agreed]
-splevels_agreed = str_to_title(splevels_agreed)
-splevels_agreed[which(mrca_agreed == "Myriapoda")] = "Class"
-
-newclass_agreed = newclass[agreed]
-
-train_taxa = train[,28:40]
-
-last_col_index = c()
-for (i in 1:nrow(train)){
-  last_col_index[i] <- max(which(train_taxa[i,] == train$order_plus[i]))
-}
-Det_Level = colnames(train_taxa)[last_col_index]
-
-splevelsog_agreed = c()
-for(x in 1:length(newclass_agreed)){
-  splevelsog_agreed[x] = as.character(Det_Level[which(train$order_plus == newclass_agreed[x])[1]])
-}
-Det_Level = as.factor(Det_Level)
-splevelsog_agreed = factor(splevelsog_agreed, levels = levels(Det_Level))
-#splevelsog_agreed = splevelsog_agreed[agreed]
-
-numsplevels_agreed = as.numeric(ordered(splevels_agreed, levels = taxaorder))
-numsplevelsog_agreed = as.numeric(ordered(splevelsog_agreed, levels = taxaorder))
-
-SpecifyImprove_agreed = data.frame(numsplevelsog_agreed, numsplevels_agreed)
-improve_agreed = SpecifyImprove_agreed[,1] - SpecifyImprove_agreed[,2]
+# #The following does the analysis only for cases where the DNA and ML agree
+# 
+# splevels_agreed = splevels[agreed]
+# mrca_agreed = mrca[agreed]
+# splevels_agreed = str_to_title(splevels_agreed)
+# 
+# newclass_agreed = newclass[agreed]
+# 
+# taxa = invertmatch[,28:40]
+# 
+# last_col_index = c()
+# for (i in 1:nrow(train)){
+#   last_col_index[i] <- max(which(taxa[i,] == train$order_plus[i]))
+# }
+# Det_Level = colnames(taxa)[last_col_index]
+# 
+# splevelsog_agreed = c()
+# for(x in 1:length(newclass_agreed)){
+#   splevelsog_agreed[x] = as.character(Det_Level[which(train$order_plus == newclass_agreed[x])[1]])
+# }
+# Det_Level = as.factor(Det_Level)
+# splevelsog_agreed = factor(splevelsog_agreed, levels = levels(Det_Level))
+# #splevelsog_agreed = splevelsog_agreed[agreed]
+# 
+# numsplevels_agreed = as.numeric(ordered(splevels_agreed, levels = taxaorder))
+# numsplevelsog_agreed = as.numeric(ordered(splevelsog_agreed, levels = taxaorder))
+# 
+# SpecifyImprove_agreed = data.frame(numsplevelsog_agreed, numsplevels_agreed)
+# improve_agreed = SpecifyImprove_agreed[,1] - SpecifyImprove_agreed[,2]
 
 ###########
 ### All ###
@@ -143,15 +146,15 @@ improve_agreed = SpecifyImprove_agreed[,1] - SpecifyImprove_agreed[,2]
 #The following does the entire DNA bias analysis
 
 splevels = str_to_title(splevels)
-splevels[which(mrca == "Myriapoda")] = "Class"
 
-train_taxa = train[,28:40]
+taxa = invertmatch[invertmatch$X %in% train$X,28:40]
+taxa[taxa$Class == "Collembola", "Order"] = "Collembola"
 
 last_col_index = c()
 for (i in 1:nrow(train)){
-  last_col_index[i] <- max(which(train_taxa[i,] == train$order_plus[i]))
+  last_col_index[i] <- max(which(taxa[i,] == train$order_plus[i]))
 }
-Det_Level = colnames(train_taxa)[last_col_index]
+Det_Level = colnames(taxa)[last_col_index]
 
 splevelsog = c()
 for(x in 1:length(newclass)){
@@ -184,8 +187,24 @@ improve = SpecifyImprove[,1] - SpecifyImprove[,2]
 
 
 ####################
+### Just Agreed  ###
+####################
+
+splevels_agreed = splevels[agreed]
+splevelsog_agreed = splevelsog[agreed]
+
+numsplevels_agreed = as.numeric(ordered(splevels_agreed, levels = taxaorder))
+numsplevelsog_agreed = as.numeric(ordered(splevelsog_agreed, levels = taxaorder))
+
+SpecifyImprove_agreed = data.frame(numsplevelsog_agreed, numsplevels_agreed)
+improve_agreed = SpecifyImprove_agreed[,1] - SpecifyImprove_agreed[,2]
+
+####################
 ### ML Bias Full ###
 ####################
+
+mrca_mlbias = mrca
+mrca_mlbias[!agreed] = newclass[!agreed]
 
 splevels_mlbias = splevels
 splevels_mlbias[!agreed] = as.character(splevelsog[!agreed])
@@ -195,6 +214,22 @@ numsplevelsog = as.numeric(ordered(splevelsog, levels = taxaorder))
 
 SpecifyImprove_mlbias = data.frame(numsplevelsog, numsplevels_mlbias)
 improve_mlbias = SpecifyImprove_mlbias[,1] - SpecifyImprove_mlbias[,2]
+
+###################################################################################################
+
+SpecifyImprove$mrca = mrca
+unique_taxa <- SpecifyImprove %>%
+  count(numsplevels, mrca)
+
+SpecifyImprove_mlbias$mrca = mrca_mlbias
+unique_taxa_mlbias <- SpecifyImprove_mlbias %>%
+  count(numsplevels_mlbias, mrca)
+
+unique_taxa_merged = merge(unique_taxa, unique_taxa_mlbias, by = "mrca", all = T)
+
+write.csv(unique_taxa, "unique_taxa_dnabias.csv", row.names = F)
+write.csv(unique_taxa_mlbias, "unique_taxa_mlbias.csv", row.names = F)
+write.csv(unique_taxa_merged, "unique_taxa_merged.csv", row.names = F)
 
 ###################################################################################################
 
