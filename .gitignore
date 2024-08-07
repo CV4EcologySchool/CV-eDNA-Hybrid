@@ -5,6 +5,7 @@ plots
 
 *.h5
 *.json
+*.csv
 
 __pycache__
 *.pyc
