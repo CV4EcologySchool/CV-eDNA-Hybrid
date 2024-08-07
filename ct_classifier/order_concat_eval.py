@@ -89,18 +89,18 @@ def main():
     all_true = all_true.numpy()
     
     named_true_long = [Y_ordered[index] for index in all_true]
-    named_true_short = [Y_ordered[index] for index in all_true]
+    named_true_short = [short_Y_ordered[index] for index in all_true]
       
     
     # load model
-    model = tf.keras.models.load_model(f'model_states\{experiment}\{experiment}_{seed[0]}.h5')
+    model = tf.keras.models.load_model(f'model_states\{experiment}\{experiment}_loss.h5')
     
     probs = model.predict(test_generator)
     predicted_classes = tf.argmax(probs, axis=1)
     predicted_classes = predicted_classes.numpy()
           
     named_pred_long = [Y_ordered[index] for index in predicted_classes]
-    named_pred_short = [Y_ordered[index] for index in predicted_classes]
+    named_pred_short = [short_Y_ordered[index] for index in predicted_classes]
     
     top3_indices = np.argsort(probs, axis=1)[:, -3:]
     t3_class = np.any(top3_indices == all_true[:, np.newaxis], axis=1)
@@ -120,6 +120,13 @@ def main():
 
     conf_tab = conf_table(conf_matrix, Y_ordered)    
     figure, n = plt_conf(conf_tab, short_Y_ordered, report)
+    
+    named_pred_short = np.array(named_pred_short)
+    
+    np.savetxt(f'{experiment}_preds.csv', predicted_classes, delimiter=',', header = "preds")
+    np.savetxt(f'{experiment}_named-preds.csv', named_pred_short, fmt='%s', delimiter=',', header = "preds")
+    np.savetxt(f'{experiment}_probs.csv', probs, delimiter=',', header = ','.join(short_Y_ordered))
+    
     # # Save the plot
     # fig_path = os.path.join(
     #     conf_path,

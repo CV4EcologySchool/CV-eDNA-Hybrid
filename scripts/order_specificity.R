@@ -1,6 +1,6 @@
 library(stringr)
 
-setwd("C:/Users/jarre/ownCloud/CV-eDNA")
+setwd("C:/Carabid_Data/CV-eDNA/splits/order")
 
 # bool vector of whether or not the predicted class is detected by the DNA 
 agreed = c()

@@ -123,27 +123,27 @@ with open(f'{experiment}_{best_epoch}.json', 'w') as json_file:
 #sys.stdout.close()
 #sys.stdout = sys.__stdout__
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
-# # Plot accuracy
-# plt.figure(figsize=(8, 6))
-# plt.plot(history.history['accuracy'])
-# plt.plot(history.history['val_accuracy'])
-# plt.title(f'{experiment} Accuracy', fontsize=16)
-# plt.xlabel('Epoch', fontsize=14)
-# plt.ylabel('Accuracy', fontsize=14)
-# plt.legend(['Train', 'Validation'], loc='upper left', fontsize=12)
-# plt.tick_params(axis='both', labelsize=12)
-# plt.show()
+# Plot accuracy
+plt.figure(figsize=(8, 6))
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title(f'{experiment} Accuracy', fontsize=16)
+plt.xlabel('Epoch', fontsize=14)
+plt.ylabel('Accuracy', fontsize=14)
+plt.legend(['Train', 'Validation'], loc='upper left', fontsize=12)
+plt.tick_params(axis='both', labelsize=12)
+plt.show()
 
-# # Plot loss
-# plt.figure(figsize=(8, 6))
-# plt.plot(history.history['loss'])
-# plt.plot(history.history['val_loss'])
-# plt.title(f'{experiment} Loss', fontsize=16)
-# plt.xlabel('Epoch', fontsize=14)
-# plt.ylabel('Loss', fontsize=14)
-# plt.legend(['Train', 'Validation'], loc='upper right', fontsize=12)
-# plt.tick_params(axis='both', labelsize=12)
-# plt.show()
+# Plot loss
+plt.figure(figsize=(8, 6))
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title(f'{experiment} Loss', fontsize=16)
+plt.xlabel('Epoch', fontsize=14)
+plt.ylabel('Loss', fontsize=14)
+plt.legend(['Train', 'Validation'], loc='upper right', fontsize=12)
+plt.tick_params(axis='both', labelsize=12)
+plt.show()
 

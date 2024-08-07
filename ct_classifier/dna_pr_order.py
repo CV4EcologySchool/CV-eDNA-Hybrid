@@ -12,9 +12,9 @@ import json
 import os
 
 # Sample data
-with open(r"C:\Carabid_Data\CV-eDNA\splits\order\image_multilab_order.json") as json_file:
+with open(r"C:\Carabid_Data\CV-eDNA\splits\order\image_multilab_order_train.json") as json_file:
     image_multilab = json.load(json_file)
-with open(r"C:\Carabid_Data\CV-eDNA\splits\order\dna_multilab_order.json") as json_file:
+with open(r"C:\Carabid_Data\CV-eDNA\splits\order\dna_multilab_order_train.json") as json_file:
     dna_multilab = json.load(json_file)
 
 ground_truth = [value for value in image_multilab.values()]
@@ -45,7 +45,7 @@ specificities = []
 for label_index in range(len(all_labels)):
     precision = precision_score(ground_truth_bin[:, label_index], 
                                 predicted_labels_bin[:, label_index], 
-                                zero_division = 1)
+                                zero_division = np.nan)
     recall = recall_score(ground_truth_bin[:, label_index], 
                           predicted_labels_bin[:, label_index])
     
@@ -79,11 +79,11 @@ for label_index, label in index_to_label.items():
                                      'recall': recall,
                                      'specificity': specificity}
 
-sum(precisions) / len(precisions)
-sum(recalls) / len(recalls)
-sum(specificities) / len(specificities)
+np.nanmean(precisions)
+np.nanmean(recalls)
+np.nanmean(specificities)
 
-os.chdir(r"C:\Users\jarre\ownCloud\CV-eDNA\splits\order")
+os.chdir(r"C:\Carabid_Data\CV-eDNA\splits\order")
 json_filename = "dna_pr.json"
 with open(json_filename, "w") as json_file:
     json.dump(label_precision_recall, json_file, indent=4)

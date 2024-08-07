@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from pySankey.sankey import sankey
 
-os.chdir(r"C:\Carabid_Data\CV-eDNA")
+os.chdir(r"C:\Carabid_Data\CV-eDNA\splits\order")
 
 df = pd.read_csv("ML_DNABias.csv", sep = ",")
 
